@@ -198,20 +198,21 @@ function renderAll() {
 function renderCategories() {
   const select = el('categoryFilter');
   const current = select.value;
-  const categories = [...new Set(state.items.map((item) => item.category).filter(Boolean))].sort();
+  const categories = [...new Set(activeItems().map((item) => item.category).filter(Boolean))].sort();
   select.innerHTML = '<option value="">All categories</option>' + categories.map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('');
   select.value = current;
 }
 
 function renderDashboard() {
-  const totalRolls = state.items.reduce((sum, item) => sum + Number(item.currentRolls || 0), 0);
-  const totalWeight = state.items.reduce((sum, item) => sum + Number(item.currentWeight || 0), 0);
+  const items = activeItems();
+  const totalRolls = items.reduce((sum, item) => sum + Number(item.currentRolls || 0), 0);
+  const totalWeight = items.reduce((sum, item) => sum + Number(item.currentWeight || 0), 0);
   const today = new Date().toISOString().slice(0, 10);
   const todayCount = state.transactions.filter((tx) => tx.timestamp.slice(0, 10) === today).length;
 
   el('mRolls').textContent = formatNumber(totalRolls, 0);
   el('mWeight').textContent = formatNumber(totalWeight, 2);
-  el('mItems').textContent = state.items.length;
+  el('mItems').textContent = items.length;
   el('mToday').textContent = todayCount;
 
   el('recentRows').innerHTML = state.transactions.slice(-8).reverse().map((tx) => {
@@ -230,7 +231,7 @@ function renderDashboard() {
 function renderInventory() {
   const query = el('inventorySearch').value.trim().toLowerCase();
   const category = el('categoryFilter').value;
-  const rows = state.items.filter((item) => {
+  const rows = activeItems().filter((item) => {
     const text = `${item.id} ${item.category} ${item.product} ${item.gauge} ${item.meters} ${item.remarks}`.toLowerCase();
     return (!query || text.includes(query)) && (!category || item.category === category);
   });
@@ -434,7 +435,7 @@ function buildWeeklySummary(from, to) {
   const fromDate = from ? new Date(`${from}T00:00:00`) : null;
   const toDate = to ? new Date(`${to}T23:59:59`) : null;
 
-  return state.items.map((item) => {
+  return activeItems().map((item) => {
     const periodTx = state.transactions.filter((tx) => {
       const txDate = new Date(tx.timestamp);
       return tx.itemId === item.id && (!fromDate || txDate >= fromDate) && (!toDate || txDate <= toDate);
@@ -525,7 +526,7 @@ function closeWeek() {
 
 function renderLabels() {
   const query = el('labelSearch').value.trim().toLowerCase();
-  const items = state.items.filter((item) => {
+  const items = activeItems().filter((item) => {
     const text = `${item.id} ${item.category} ${item.product} ${item.gauge} ${item.meters} ${item.remarks}`.toLowerCase();
     return !query || text.includes(query);
   });
@@ -572,8 +573,8 @@ function findItem(value) {
   const candidate = hashMatch ? hashMatch[1] : idMatch ? idMatch[1] : decoded;
   const normalized = decodeURIComponent(candidate).trim();
 
-  return state.items.find((item) => item.id.toLowerCase() === normalized.toLowerCase())
-    || state.items.find((item) => legacyQrText(item).toLowerCase() === normalized.toLowerCase());
+  return activeItems().find((item) => item.id.toLowerCase() === normalized.toLowerCase())
+    || activeItems().find((item) => legacyQrText(item).toLowerCase() === normalized.toLowerCase());
 }
 
 function renderScanResult() {
@@ -840,6 +841,14 @@ function applyHashScan() {
 
 function legacyQrText(item) {
   return `${item.category}|${item.product}|${item.gauge}|${item.meters}|${item.remarks}|${Number(item.weightPerRoll || 0).toFixed(2)}`;
+}
+
+function activeItems() {
+  return state.items.filter((item) => !isImportedTotalRow(item));
+}
+
+function isImportedTotalRow(item) {
+  return String(item.product || '').trim().toUpperCase() === 'TOTAL';
 }
 
 function toDbItem(item) {
