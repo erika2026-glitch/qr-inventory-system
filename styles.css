@@ -677,17 +677,32 @@ dialog form {
   .topbar,
   .section-head,
   .toast,
-  .view:not(#labels):not(#reports),
   .archive-band {
     display: none !important;
   }
 
-  #reports {
+  .view {
+    display: none !important;
+  }
+
+  .view.active {
     display: block !important;
   }
 
-  #labels {
+  body[data-print-mode="labels"] .view {
     display: none !important;
+  }
+
+  body[data-print-mode="labels"] #labels {
+    display: block !important;
+  }
+
+  body[data-print-mode="report"] .view {
+    display: none !important;
+  }
+
+  body[data-print-mode="report"] #reports {
+    display: block !important;
   }
 
   .shell {

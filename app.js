@@ -165,9 +165,9 @@ function bindActions() {
   el('txActionFilter').addEventListener('change', renderTransactions);
   el('labelSearch').addEventListener('input', renderLabels);
   el('applyReportBtn').addEventListener('click', renderReports);
-  el('printReportBtn').addEventListener('click', () => window.print());
+  el('printReportBtn').addEventListener('click', () => printMode('report'));
   el('closeWeekBtn').addEventListener('click', closeWeek);
-  el('printBtn').addEventListener('click', () => window.print());
+  el('printBtn').addEventListener('click', () => printMode('labels'));
   el('exportBtn').addEventListener('click', exportTransactionsCsv);
   el('backupBtn').addEventListener('click', downloadBackup);
   el('downloadBackupBtn').addEventListener('click', downloadBackup);
@@ -833,6 +833,15 @@ function saveNewItem(event) {
   renderAll();
   toast(`Added ${item.id}.`);
 }
+
+function printMode(mode) {
+  document.body.dataset.printMode = mode;
+  window.setTimeout(() => window.print(), 50);
+}
+
+window.addEventListener('afterprint', () => {
+  delete document.body.dataset.printMode;
+});
 
 async function syncNewItemToCloud(item) {
   if (!cloudEnabled) return;
