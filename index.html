@@ -25,6 +25,9 @@
         <button class="nav-btn" data-view="transactions" title="Transactions">
           <span class="nav-icon">↕</span><span>Transactions</span>
         </button>
+        <button class="nav-btn" data-view="reports" title="Reports">
+          <span class="nav-icon">▤</span><span>Reports</span>
+        </button>
         <button class="nav-btn" data-view="labels" title="QR Labels">
           <span class="nav-icon">□</span><span>QR Labels</span>
         </button>
@@ -154,6 +157,64 @@
             </thead>
             <tbody id="transactionRows"></tbody>
           </table>
+        </div>
+      </section>
+
+      <section id="reports" class="view">
+        <div class="section-head report-controls">
+          <div class="filters">
+            <label>From<input id="reportFrom" type="date"></label>
+            <label>To<input id="reportTo" type="date"></label>
+            <button id="applyReportBtn" class="primary">Apply</button>
+          </div>
+          <div class="filters">
+            <button id="printReportBtn" class="secondary">Print Report</button>
+            <button id="closeWeekBtn" class="primary">Close Week</button>
+          </div>
+        </div>
+        <div class="report-sheet">
+          <div class="report-title">
+            <strong>INNOPRINT PACKAGING CONVERTER CORP.</strong>
+            <span id="reportRangeTitle">Weekly Inventory Report</span>
+          </div>
+          <div class="table-wrap report-table-wrap">
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th rowspan="2">Product Description</th>
+                  <th colspan="2">Beg. Inventory</th>
+                  <th colspan="2">Deliveries (+)</th>
+                  <th colspan="2">Issuances (-)</th>
+                  <th colspan="2">Ending Inventory</th>
+                  <th rowspan="2">Status</th>
+                </tr>
+                <tr>
+                  <th>No. of Rolls</th>
+                  <th>Equiv. Weight</th>
+                  <th>No. of Rolls</th>
+                  <th>Equiv. Weight</th>
+                  <th>No. of Rolls</th>
+                  <th>Equiv. Weight</th>
+                  <th>No. of Rolls</th>
+                  <th>Equiv. Weight</th>
+                </tr>
+              </thead>
+              <tbody id="reportRows"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="band archive-band">
+          <div class="section-head">
+            <h2>Closed Weeks</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Period</th><th>Closed At</th><th>Items</th><th>Total Ending Rolls</th><th>Total Ending Weight</th></tr>
+              </thead>
+              <tbody id="closedWeeksRows"></tbody>
+            </table>
+          </div>
         </div>
       </section>
 

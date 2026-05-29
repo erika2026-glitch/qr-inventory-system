@@ -9,6 +9,7 @@ const viewMeta = {
   scan: ['Scan', 'Post IN and OUT transactions from QR codes'],
   inventory: ['Inventory', 'Manage rolls, weights, and stock status'],
   transactions: ['Transactions', 'Audit trail of all movement'],
+  reports: ['Reports', 'Weekly inventory report and closing'],
   labels: ['QR Labels', 'Print labels for current inventory items'],
   settings: ['Settings', 'Backup, restore, and local data controls']
 };
@@ -42,6 +43,7 @@ function loadState() {
   return {
     items: (window.STARTER_ITEMS || []).map((item) => normalizeItemShape(item)),
     transactions: [],
+    closedWeeks: [],
     nextItemNumber: (window.STARTER_ITEMS || []).length + 1
   };
 }
@@ -161,6 +163,9 @@ function bindActions() {
   el('txSearch').addEventListener('input', renderTransactions);
   el('txActionFilter').addEventListener('change', renderTransactions);
   el('labelSearch').addEventListener('input', renderLabels);
+  el('applyReportBtn').addEventListener('click', renderReports);
+  el('printReportBtn').addEventListener('click', () => window.print());
+  el('closeWeekBtn').addEventListener('click', closeWeek);
   el('printBtn').addEventListener('click', () => window.print());
   el('exportBtn').addEventListener('click', exportTransactionsCsv);
   el('backupBtn').addEventListener('click', downloadBackup);
@@ -170,6 +175,7 @@ function bindActions() {
   el('addItemBtn').addEventListener('click', () => el('itemDialog').showModal());
   el('cancelItemBtn').addEventListener('click', () => el('itemDialog').close());
   el('itemForm').addEventListener('submit', saveNewItem);
+  initializeReportDates();
 }
 
 function showView(view) {
@@ -185,6 +191,7 @@ function renderAll() {
   renderDashboard();
   renderInventory();
   renderTransactions();
+  renderReports();
   renderLabels();
 }
 
@@ -296,6 +303,141 @@ function renderTransactions() {
       <td>${escapeHtml(tx.user || '')}</td>
     </tr>`;
   }).join('') || `<tr><td colspan="9">No transactions yet.</td></tr>`;
+}
+
+function initializeReportDates() {
+  const today = new Date();
+  const start = new Date(today);
+  start.setDate(today.getDate() - today.getDay() + 1);
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  if (!el('reportFrom').value) el('reportFrom').value = toDateInput(start);
+  if (!el('reportTo').value) el('reportTo').value = toDateInput(end);
+}
+
+function renderReports() {
+  const from = el('reportFrom').value;
+  const to = el('reportTo').value;
+  const summaries = buildWeeklySummary(from, to);
+  const rangeText = from && to ? `Inventory Report as of ${formatShortDate(from)} to ${formatShortDate(to)}` : 'Weekly Inventory Report';
+  el('reportRangeTitle').textContent = rangeText;
+
+  const grouped = groupBy(summaries, (row) => row.category || 'Uncategorized');
+  const html = [];
+  for (const [category, rows] of grouped.entries()) {
+    html.push(`<tr class="category-row"><td colspan="10">${escapeHtml(category)}</td></tr>`);
+    rows.forEach((row) => {
+      const statusClass = row.endingRolls <= 0 ? 'low' : row.endingRolls <= Number(row.item.minRolls || 0) ? 'warn' : 'ok';
+      const statusText = statusClass === 'ok' ? 'OK' : statusClass === 'warn' ? 'LOW' : 'ZERO';
+      html.push(`<tr>
+        <td>${escapeHtml(reportDescription(row.item))}</td>
+        <td>${formatBlankZero(row.beginningRolls, 0)}</td>
+        <td>${formatBlankZero(row.beginningWeight, 2)}</td>
+        <td>${formatBlankZero(row.inRolls, 0)}</td>
+        <td>${formatBlankZero(row.inWeight, 2)}</td>
+        <td>${formatBlankZero(row.outRolls, 0)}</td>
+        <td>${formatBlankZero(row.outWeight, 2)}</td>
+        <td>${formatBlankZero(row.endingRolls, 0)}</td>
+        <td>${formatBlankZero(row.endingWeight, 2)}</td>
+        <td><span class="pill ${statusClass}">${statusText}</span></td>
+      </tr>`);
+    });
+  }
+  el('reportRows').innerHTML = html.join('') || `<tr><td colspan="10">No inventory rows.</td></tr>`;
+  renderClosedWeeks();
+}
+
+function buildWeeklySummary(from, to) {
+  const fromDate = from ? new Date(`${from}T00:00:00`) : null;
+  const toDate = to ? new Date(`${to}T23:59:59`) : null;
+
+  return state.items.map((item) => {
+    const periodTx = state.transactions.filter((tx) => {
+      const txDate = new Date(tx.timestamp);
+      return tx.itemId === item.id && (!fromDate || txDate >= fromDate) && (!toDate || txDate <= toDate);
+    });
+    const totals = periodTx.reduce((sum, tx) => {
+      const rolls = Number(tx.rolls || 0);
+      const weight = Number(tx.totalWeight || 0);
+      if (tx.action === 'IN') {
+        sum.inRolls += rolls;
+        sum.inWeight += weight;
+      } else if (tx.action === 'OUT') {
+        sum.outRolls += rolls;
+        sum.outWeight += weight;
+      }
+      return sum;
+    }, { inRolls: 0, inWeight: 0, outRolls: 0, outWeight: 0 });
+    const beginningRolls = Number(item.beginningRolls ?? item.currentRolls ?? 0);
+    const beginningWeight = Number(item.beginningWeight ?? item.currentWeight ?? 0);
+    const endingRolls = beginningRolls + totals.inRolls - totals.outRolls;
+    const endingWeight = Math.max(0, beginningWeight + totals.inWeight - totals.outWeight);
+    return {
+      item,
+      category: item.category,
+      beginningRolls,
+      beginningWeight,
+      ...totals,
+      endingRolls,
+      endingWeight
+    };
+  });
+}
+
+function renderClosedWeeks() {
+  const weeks = state.closedWeeks || [];
+  el('closedWeeksRows').innerHTML = weeks.slice().reverse().map((week) => `<tr>
+    <td>${escapeHtml(week.from)} to ${escapeHtml(week.to)}</td>
+    <td>${formatDate(week.closedAt)}</td>
+    <td>${week.itemCount}</td>
+    <td>${formatNumber(week.totalEndingRolls, 0)}</td>
+    <td>${formatNumber(week.totalEndingWeight, 2)}</td>
+  </tr>`).join('') || `<tr><td colspan="5">No closed weeks yet.</td></tr>`;
+}
+
+function closeWeek() {
+  const from = el('reportFrom').value;
+  const to = el('reportTo').value;
+  if (!from || !to) {
+    toast('Choose a report date range first.');
+    return;
+  }
+  if (!confirm(`Close week ${from} to ${to}? Ending inventory will become the new beginning inventory.`)) {
+    return;
+  }
+
+  const summary = buildWeeklySummary(from, to);
+  summary.forEach((row) => {
+    row.item.beginningRolls = row.endingRolls;
+    row.item.beginningWeight = row.endingWeight;
+    row.item.currentRolls = row.endingRolls;
+    row.item.currentWeight = row.endingWeight;
+  });
+  state.closedWeeks = state.closedWeeks || [];
+  state.closedWeeks.push({
+    from,
+    to,
+    closedAt: new Date().toISOString(),
+    itemCount: summary.length,
+    totalEndingRolls: summary.reduce((sum, row) => sum + row.endingRolls, 0),
+    totalEndingWeight: summary.reduce((sum, row) => sum + row.endingWeight, 0),
+    rows: summary.map((row) => ({
+      id: row.item.id,
+      product: row.item.product,
+      beginningRolls: row.beginningRolls,
+      beginningWeight: row.beginningWeight,
+      inRolls: row.inRolls,
+      inWeight: row.inWeight,
+      outRolls: row.outRolls,
+      outWeight: row.outWeight,
+      endingRolls: row.endingRolls,
+      endingWeight: row.endingWeight
+    }))
+  });
+  saveState();
+  syncClosedWeekToCloud(summary);
+  renderAll();
+  toast('Week closed. Ending inventory is now the next beginning inventory.');
 }
 
 function renderLabels() {
@@ -549,6 +691,19 @@ async function syncNewItemToCloud(item) {
   }
 }
 
+async function syncClosedWeekToCloud(summary) {
+  if (!cloudEnabled) return;
+  try {
+    await Promise.all(summary.map((row) => cloudPatch('items', 'id', row.item.id, {
+      current_rolls: row.endingRolls,
+      current_weight: row.endingWeight
+    })));
+  } catch (error) {
+    setSyncStatus('Sync error', 'offline');
+    toast(`Week closed locally, but cloud sync failed: ${error.message}`);
+  }
+}
+
 function exportTransactionsCsv() {
   const headers = ['Timestamp', 'QR ID', 'Product', 'Action', 'Rolls', 'Weight/Roll', 'Total Weight', 'Balance After', 'User'];
   const rows = state.transactions.map((tx) => [tx.timestamp, tx.itemId, tx.product, tx.action, tx.rolls, tx.weightPerRoll, tx.totalWeight, tx.balanceAfter, tx.user || '']);
@@ -679,6 +834,32 @@ function nextItemNumberFromItems(items) {
     const match = String(item.id).match(/^QR-(\d+)$/);
     return match ? Math.max(max, Number(match[1]) + 1) : max;
   }, 1);
+}
+
+function reportDescription(item) {
+  return [item.product, item.gauge, item.meters, item.remarks].filter(Boolean).join(' | ');
+}
+
+function groupBy(rows, keyFn) {
+  const map = new Map();
+  rows.forEach((row) => {
+    const key = keyFn(row);
+    if (!map.has(key)) map.set(key, []);
+    map.get(key).push(row);
+  });
+  return map;
+}
+
+function toDateInput(date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function formatShortDate(value) {
+  return new Date(`${value}T00:00:00`).toLocaleDateString(undefined, {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  });
 }
 
 function downloadText(filename, text, mimeType) {

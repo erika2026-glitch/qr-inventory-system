@@ -484,6 +484,69 @@ tr:last-child td {
   padding: 16px;
 }
 
+.report-controls label {
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.report-sheet {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.report-title {
+  padding: 14px;
+  text-align: center;
+  border-bottom: 1px solid var(--line);
+}
+
+.report-title strong,
+.report-title span {
+  display: block;
+}
+
+.report-title strong {
+  font-size: 18px;
+}
+
+.report-title span {
+  color: var(--muted);
+  margin-top: 4px;
+  font-weight: 700;
+}
+
+.report-table-wrap {
+  border: 0;
+  border-radius: 0;
+}
+
+.report-table th,
+.report-table td {
+  border: 1px solid #aeb8c2;
+  text-align: center;
+  font-size: 12px;
+  padding: 6px 7px;
+}
+
+.report-table th:first-child,
+.report-table td:first-child {
+  text-align: left;
+}
+
+.category-row td {
+  background: #eef3f7;
+  font-weight: 700;
+}
+
+.archive-band {
+  margin-top: 14px;
+}
+
 .settings-panel button,
 .file-label {
   margin-top: 14px;
@@ -604,12 +667,17 @@ dialog form {
   .topbar,
   .section-head,
   .toast,
-  .view:not(#labels) {
+  .view:not(#labels):not(#reports),
+  .archive-band {
     display: none !important;
   }
 
-  #labels {
+  #reports {
     display: block !important;
+  }
+
+  #labels {
+    display: none !important;
   }
 
   .shell {
