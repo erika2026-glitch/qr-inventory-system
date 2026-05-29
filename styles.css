@@ -496,6 +496,14 @@ tr:last-child td {
   font-weight: 700;
 }
 
+.report-controls {
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding-bottom: 8px;
+}
+
 .report-sheet {
   background: #fff;
   border: 1px solid var(--line);
