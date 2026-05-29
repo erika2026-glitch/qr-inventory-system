@@ -760,7 +760,7 @@ dialog form {
 
   body[data-print-mode="report"] .report-table th:first-child,
   body[data-print-mode="report"] .report-table td:first-child {
-    width: 30%;
+    width: 20%;
   }
 
   body[data-print-mode="report"] .category-row td {

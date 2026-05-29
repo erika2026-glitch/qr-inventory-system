@@ -431,7 +431,7 @@ function renderReports() {
   const grouped = groupBy(summaries, (row) => row.category || 'Uncategorized');
   const html = [];
   for (const [category, rows] of grouped.entries()) {
-    html.push(`<tr class="category-row"><td colspan="10">${escapeHtml(category)}</td></tr>`);
+    html.push(`<tr class="category-row"><td colspan="13">${escapeHtml(category)}</td></tr>`);
     const total = emptyTotals();
     rows.forEach((row) => {
       total.beginningRolls += row.beginningRolls;
@@ -445,7 +445,10 @@ function renderReports() {
       const statusClass = row.endingRolls <= 0 ? 'low' : row.endingRolls <= Number(row.item.minRolls || 0) ? 'warn' : 'ok';
       const statusText = statusClass === 'ok' ? 'OK' : statusClass === 'warn' ? 'LOW' : 'ZERO';
       html.push(`<tr>
-        <td>${escapeHtml(reportDescription(row.item))}</td>
+        <td>${escapeHtml(row.item.product)}</td>
+        <td>${escapeHtml(row.item.gauge)}</td>
+        <td>${escapeHtml(row.item.meters)}</td>
+        <td>${escapeHtml(row.item.remarks)}</td>
         <td>${formatBlankZero(row.beginningRolls, 0)}</td>
         <td>${formatBlankZero(row.beginningWeight, 2)}</td>
         <td>${formatBlankZero(row.inRolls, 0)}</td>
@@ -459,13 +462,16 @@ function renderReports() {
     });
     html.push(reportCategoryTotalRow(category, total));
   }
-  el('reportRows').innerHTML = html.join('') || `<tr><td colspan="10">No inventory rows.</td></tr>`;
+  el('reportRows').innerHTML = html.join('') || `<tr><td colspan="13">No inventory rows.</td></tr>`;
   renderClosedWeeks();
 }
 
 function reportCategoryTotalRow(category, total) {
   return `<tr class="total-row">
     <td>${escapeHtml(category)} TOTAL</td>
+    <td></td>
+    <td></td>
+    <td></td>
     <td>${formatBlankZero(total.beginningRolls, 0)}</td>
     <td>${formatBlankZero(total.beginningWeight, 2)}</td>
     <td>${formatBlankZero(total.inRolls, 0)}</td>
