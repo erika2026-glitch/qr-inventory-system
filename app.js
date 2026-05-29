@@ -243,14 +243,14 @@ function renderInventory() {
       <td>${escapeHtml(item.gauge)}</td>
       <td>${escapeHtml(item.meters)}</td>
       <td>${escapeHtml(item.remarks)}</td>
-      <td>${formatNumber(item.beginningRolls, 0)}</td>
-      <td>${formatNumber(item.beginningWeight, 2)}</td>
-      <td>${formatNumber(movement.inRolls, 0)}</td>
-      <td>${formatNumber(movement.inWeight, 2)}</td>
-      <td>${formatNumber(movement.outRolls, 0)}</td>
-      <td>${formatNumber(movement.outWeight, 2)}</td>
-      <td>${formatNumber(endingRolls, 0)}</td>
-      <td>${formatNumber(Math.max(0, endingWeight), 2)}</td>
+      <td>${formatBlankZero(item.beginningRolls, 0)}</td>
+      <td>${formatBlankZero(item.beginningWeight, 2)}</td>
+      <td>${formatBlankZero(movement.inRolls, 0)}</td>
+      <td>${formatBlankZero(movement.inWeight, 2)}</td>
+      <td>${formatBlankZero(movement.outRolls, 0)}</td>
+      <td>${formatBlankZero(movement.outWeight, 2)}</td>
+      <td>${formatBlankZero(endingRolls, 0)}</td>
+      <td>${formatBlankZero(Math.max(0, endingWeight), 2)}</td>
       <td><span class="pill ${status}">${label}</span></td>
     </tr>`;
   }).join('') || `<tr><td colspan="15">No matching items.</td></tr>`;
@@ -719,6 +719,11 @@ function formatNumber(value, decimals) {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals
   });
+}
+
+function formatBlankZero(value, decimals) {
+  const number = Number(value || 0);
+  return number === 0 ? '' : formatNumber(number, decimals);
 }
 
 function formatDate(value) {
