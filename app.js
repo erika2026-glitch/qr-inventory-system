@@ -236,7 +236,11 @@ function renderInventory() {
     return (!query || text.includes(query)) && (!category || item.category === category);
   });
 
-  el('inventoryRows').innerHTML = rows.map((item) => {
+  const grouped = groupBy(rows, (item) => item.category || 'Uncategorized');
+  const html = [];
+
+  for (const [category, items] of grouped.entries()) {
+    items.forEach((item) => {
     const movement = getItemMovement(item.id);
     const endingRolls = Number(item.beginningRolls || 0) + movement.inRolls - movement.outRolls;
     const endingWeight = Number(item.beginningWeight || 0) + movement.inWeight - movement.outWeight;
@@ -244,7 +248,7 @@ function renderInventory() {
     item.currentWeight = Math.max(0, endingWeight);
     const status = endingRolls <= 0 ? 'low' : endingRolls <= Number(item.minRolls || 0) ? 'warn' : 'ok';
     const label = status === 'ok' ? 'OK' : status === 'warn' ? 'LOW' : 'ZERO';
-    return `<tr>
+    html.push(`<tr>
       <td>${escapeHtml(item.id)}</td>
       <td>${escapeHtml(item.category)}</td>
       <td>${escapeHtml(item.product)}</td>
@@ -260,9 +264,13 @@ function renderInventory() {
       <td>${formatBlankZero(endingRolls, 0)}</td>
       <td>${formatBlankZero(Math.max(0, endingWeight), 2)}</td>
       <td><span class="pill ${status}">${label}</span></td>
-    </tr>`;
-  }).join('') || `<tr><td colspan="15">No matching items.</td></tr>`;
-  el('inventoryTotalRows').innerHTML = buildInventoryTotalRows(rows).join('') || `<tr><td colspan="10">No totals.</td></tr>`;
+    </tr>`);
+    });
+
+    html.push(buildInventoryCategoryTotalRow(category, items));
+  }
+
+  el('inventoryRows').innerHTML = html.join('') || `<tr><td colspan="15">No matching items.</td></tr>`;
 }
 
 function getItemMovement(itemId) {
@@ -302,7 +310,7 @@ function buildInventoryTotalRows(rows) {
       sum.endingWeight += endingWeight;
       return sum;
     }, emptyTotals());
-    totals.push(totalRowHtml(category, total, true));
+    totals.push(buildInventoryTotalRow(category, total));
   }
   return totals;
 }
@@ -320,11 +328,34 @@ function emptyTotals() {
   };
 }
 
-function totalRowHtml(category, total, inventoryTotals) {
-  if (inventoryTotals) {
-    return `<tr class="total-row">
+function buildInventoryCategoryTotalRow(category, items) {
+  const total = items.reduce((sum, item) => {
+    const movement = getItemMovement(item.id);
+    const beginningRolls = Number(item.beginningRolls || 0);
+    const beginningWeight = Number(item.beginningWeight || 0);
+    const endingRolls = beginningRolls + movement.inRolls - movement.outRolls;
+    const endingWeight = Math.max(0, beginningWeight + movement.inWeight - movement.outWeight);
+    sum.beginningRolls += beginningRolls;
+    sum.beginningWeight += beginningWeight;
+    sum.inRolls += movement.inRolls;
+    sum.inWeight += movement.inWeight;
+    sum.outRolls += movement.outRolls;
+    sum.outWeight += movement.outWeight;
+    sum.endingRolls += endingRolls;
+    sum.endingWeight += endingWeight;
+    return sum;
+  }, emptyTotals());
+  return buildInventoryTotalRow(category, total);
+}
+
+function buildInventoryTotalRow(category, total) {
+  return `<tr class="total-row">
+      <td></td>
       <td>${escapeHtml(category)}</td>
       <td>TOTAL</td>
+      <td></td>
+      <td></td>
+      <td></td>
       <td>${formatBlankZero(total.beginningRolls, 0)}</td>
       <td>${formatBlankZero(total.beginningWeight, 2)}</td>
       <td>${formatBlankZero(total.inRolls, 0)}</td>
@@ -333,9 +364,11 @@ function totalRowHtml(category, total, inventoryTotals) {
       <td>${formatBlankZero(total.outWeight, 2)}</td>
       <td>${formatBlankZero(total.endingRolls, 0)}</td>
       <td>${formatBlankZero(total.endingWeight, 2)}</td>
+      <td></td>
     </tr>`;
-  }
+}
 
+function totalRowHtml(category, total) {
   return `<tr class="total-row">
     <td>TOTAL</td>
     <td>${formatBlankZero(total.beginningRolls, 0)}</td>
