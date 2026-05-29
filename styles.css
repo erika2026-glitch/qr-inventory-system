@@ -678,7 +678,7 @@ dialog form {
 @media print {
   @page {
     size: A4 landscape;
-    margin: 5mm;
+    margin: 6mm;
   }
 
   body {
@@ -730,18 +730,18 @@ dialog form {
 
   body[data-print-mode="report"] .report-title {
     border: 0;
-    padding: 0 0 4px;
+    padding: 0 0 6px;
   }
 
   body[data-print-mode="report"] .report-title strong {
-    font-size: 10px;
+    font-size: 13px;
     letter-spacing: 0;
   }
 
   body[data-print-mode="report"] .report-title span {
     color: #000;
-    font-size: 9px;
-    margin-top: 1px;
+    font-size: 11px;
+    margin-top: 2px;
   }
 
   body[data-print-mode="report"] .report-table {
@@ -755,9 +755,9 @@ dialog form {
   body[data-print-mode="report"] .report-table td {
     border: 1px solid #000;
     color: #000;
-    font-size: 7.8px;
-    line-height: 1.05;
-    padding: 2px 3px;
+    font-size: 10px;
+    line-height: 1.15;
+    padding: 3px 4px;
     white-space: normal;
     word-break: normal;
   }
@@ -769,7 +769,7 @@ dialog form {
 
   body[data-print-mode="report"] .report-table th:first-child,
   body[data-print-mode="report"] .report-table td:first-child {
-    width: 18%;
+    width: 19%;
   }
 
   body[data-print-mode="report"] .report-table th:nth-child(2),
@@ -809,7 +809,7 @@ dialog form {
     color: #000 !important;
     padding: 0;
     min-width: 0;
-    font-size: 7.8px;
+    font-size: 10px;
   }
 
   .qr-label {
