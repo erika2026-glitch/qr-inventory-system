@@ -660,8 +660,8 @@ function renderScanResult() {
     <div class="action-form">
       <label>Rolls<input id="actionRolls" type="number" min="1" step="1" value="1"></label>
       <label>User<input id="actionUser" placeholder="Name or initials"></label>
-      <button class="primary" id="postInBtn">Post IN</button>
-      <button class="danger" id="postOutBtn">Post OUT</button>
+      <button class="primary" id="postInBtn">Delivery</button>
+      <button class="danger" id="postOutBtn">Issuance</button>
     </div>
   `;
 
@@ -673,6 +673,7 @@ function postTransaction(action) {
   if (!selectedItem) return;
   const rolls = Number(document.getElementById('actionRolls').value);
   const user = document.getElementById('actionUser').value.trim();
+  const actionLabel = action === 'IN' ? 'DELIVERY' : 'ISSUANCE';
 
   if (!Number.isFinite(rolls) || rolls <= 0) {
     toast('Enter a valid roll quantity.');
@@ -706,7 +707,7 @@ function postTransaction(action) {
   syncTransactionToCloud(selectedItem, state.transactions[state.transactions.length - 1]);
   renderAll();
   renderScanResult();
-  toast(`${action} posted for ${selectedItem.id}.`);
+  toast(`${actionLabel} successful for ${selectedItem.id}.`);
 }
 
 async function syncTransactionToCloud(item, transaction) {
