@@ -50,20 +50,6 @@ button {
   margin-bottom: 12px;
 }
 
-.logo-mark {
-  width: 42px;
-  height: 26px;
-  display: inline-grid;
-  place-items: center;
-  color: currentColor;
-  font-family: Georgia, serif;
-  font-size: 25px;
-  font-style: italic;
-  line-height: 1;
-  letter-spacing: -2px;
-  transform: skewX(-10deg);
-}
-
 .brand strong,
 .brand span {
   display: block;
@@ -136,9 +122,18 @@ nav {
 }
 
 .company-header strong {
+  display: block;
   font-size: clamp(18px, 2.1vw, 25px);
   line-height: 1.15;
   letter-spacing: 0;
+}
+
+.company-header span {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 2px;
 }
 
 h1,
