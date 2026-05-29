@@ -260,7 +260,7 @@ function renderInventory() {
       <td>${formatBlankZero(Math.max(0, endingWeight), 2)}</td>
       <td><span class="pill ${status}">${label}</span></td>
     </tr>`;
-  }).join('') || `<tr><td colspan="15">No matching items.</td></tr>`;
+  }).concat(buildInventoryTotalRows(rows)).join('') || `<tr><td colspan="15">No matching items.</td></tr>`;
 }
 
 function getItemMovement(itemId) {
@@ -278,6 +278,79 @@ function getItemMovement(itemId) {
       }
       return totals;
     }, { inRolls: 0, inWeight: 0, outRolls: 0, outWeight: 0 });
+}
+
+function buildInventoryTotalRows(rows) {
+  const totals = [];
+  const grouped = groupBy(rows, (item) => item.category || 'Uncategorized');
+  for (const [category, items] of grouped.entries()) {
+    const total = items.reduce((sum, item) => {
+      const movement = getItemMovement(item.id);
+      const beginningRolls = Number(item.beginningRolls || 0);
+      const beginningWeight = Number(item.beginningWeight || 0);
+      const endingRolls = beginningRolls + movement.inRolls - movement.outRolls;
+      const endingWeight = Math.max(0, beginningWeight + movement.inWeight - movement.outWeight);
+      sum.beginningRolls += beginningRolls;
+      sum.beginningWeight += beginningWeight;
+      sum.inRolls += movement.inRolls;
+      sum.inWeight += movement.inWeight;
+      sum.outRolls += movement.outRolls;
+      sum.outWeight += movement.outWeight;
+      sum.endingRolls += endingRolls;
+      sum.endingWeight += endingWeight;
+      return sum;
+    }, emptyTotals());
+    totals.push(totalRowHtml(category, total, 15, true));
+  }
+  return totals;
+}
+
+function emptyTotals() {
+  return {
+    beginningRolls: 0,
+    beginningWeight: 0,
+    inRolls: 0,
+    inWeight: 0,
+    outRolls: 0,
+    outWeight: 0,
+    endingRolls: 0,
+    endingWeight: 0
+  };
+}
+
+function totalRowHtml(category, total, columns, includeCategory) {
+  if (includeCategory) {
+    return `<tr class="total-row">
+      <td></td>
+      <td>${escapeHtml(category)}</td>
+      <td>TOTAL</td>
+      <td></td>
+      <td></td>
+      <td></td>
+      <td>${formatBlankZero(total.beginningRolls, 0)}</td>
+      <td>${formatBlankZero(total.beginningWeight, 2)}</td>
+      <td>${formatBlankZero(total.inRolls, 0)}</td>
+      <td>${formatBlankZero(total.inWeight, 2)}</td>
+      <td>${formatBlankZero(total.outRolls, 0)}</td>
+      <td>${formatBlankZero(total.outWeight, 2)}</td>
+      <td>${formatBlankZero(total.endingRolls, 0)}</td>
+      <td>${formatBlankZero(total.endingWeight, 2)}</td>
+      <td></td>
+    </tr>`;
+  }
+
+  return `<tr class="total-row">
+    <td>TOTAL</td>
+    <td>${formatBlankZero(total.beginningRolls, 0)}</td>
+    <td>${formatBlankZero(total.beginningWeight, 2)}</td>
+    <td>${formatBlankZero(total.inRolls, 0)}</td>
+    <td>${formatBlankZero(total.inWeight, 2)}</td>
+    <td>${formatBlankZero(total.outRolls, 0)}</td>
+    <td>${formatBlankZero(total.outWeight, 2)}</td>
+    <td>${formatBlankZero(total.endingRolls, 0)}</td>
+    <td>${formatBlankZero(total.endingWeight, 2)}</td>
+    <td></td>
+  </tr>`;
 }
 
 function renderTransactions() {
@@ -326,7 +399,16 @@ function renderReports() {
   const html = [];
   for (const [category, rows] of grouped.entries()) {
     html.push(`<tr class="category-row"><td colspan="10">${escapeHtml(category)}</td></tr>`);
+    const total = emptyTotals();
     rows.forEach((row) => {
+      total.beginningRolls += row.beginningRolls;
+      total.beginningWeight += row.beginningWeight;
+      total.inRolls += row.inRolls;
+      total.inWeight += row.inWeight;
+      total.outRolls += row.outRolls;
+      total.outWeight += row.outWeight;
+      total.endingRolls += row.endingRolls;
+      total.endingWeight += row.endingWeight;
       const statusClass = row.endingRolls <= 0 ? 'low' : row.endingRolls <= Number(row.item.minRolls || 0) ? 'warn' : 'ok';
       const statusText = statusClass === 'ok' ? 'OK' : statusClass === 'warn' ? 'LOW' : 'ZERO';
       html.push(`<tr>
@@ -342,6 +424,7 @@ function renderReports() {
         <td><span class="pill ${statusClass}">${statusText}</span></td>
       </tr>`);
     });
+    html.push(totalRowHtml(category, total, 10, false));
   }
   el('reportRows').innerHTML = html.join('') || `<tr><td colspan="10">No inventory rows.</td></tr>`;
   renderClosedWeeks();

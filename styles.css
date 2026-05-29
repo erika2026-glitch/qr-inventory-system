@@ -543,6 +543,12 @@ tr:last-child td {
   font-weight: 700;
 }
 
+.total-row td {
+  background: #f8fafc;
+  border-top: 2px solid #1d252d;
+  font-weight: 700;
+}
+
 .archive-band {
   margin-top: 14px;
 }
