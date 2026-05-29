@@ -1,4 +1,5 @@
 const STORE_KEY = 'qrInventoryApp:v1';
+const STAFF_KEY = 'qrInventoryApp:staffName';
 const SUPABASE = window.SUPABASE_CONFIG || null;
 
 const state = loadState();
@@ -172,10 +173,12 @@ function bindActions() {
   el('downloadBackupBtn').addEventListener('click', downloadBackup);
   el('restoreInput').addEventListener('change', restoreBackup);
   el('resetBtn').addEventListener('click', resetLocalData);
+  el('saveStaffBtn').addEventListener('click', saveStaffName);
   el('addItemBtn').addEventListener('click', () => el('itemDialog').showModal());
   el('cancelItemBtn').addEventListener('click', () => el('itemDialog').close());
   el('itemForm').addEventListener('submit', saveNewItem);
   initializeReportDates();
+  el('staffNameInput').value = getStaffName();
 }
 
 function showView(view) {
@@ -659,7 +662,7 @@ function renderScanResult() {
     </div>
     <div class="action-form">
       <label>Rolls<input id="actionRolls" type="number" min="1" step="1" value="1"></label>
-      <label>User<input id="actionUser" placeholder="Name or initials"></label>
+      <label>Scanned By<input id="actionUser" placeholder="Name or initials" value="${escapeHtml(getStaffName())}"></label>
       <button class="primary" id="postInBtn">Delivery</button>
       <button class="danger" id="postOutBtn">Issuance</button>
     </div>
@@ -702,6 +705,11 @@ function postTransaction(action) {
     balanceAfter: selectedItem.currentRolls,
     user
   });
+  if (user) {
+    localStorage.setItem(STAFF_KEY, user);
+    const staffInput = el('staffNameInput');
+    if (staffInput) staffInput.value = user;
+  }
 
   saveState();
   syncTransactionToCloud(selectedItem, state.transactions[state.transactions.length - 1]);
@@ -891,6 +899,16 @@ function resetLocalData() {
   saveState();
   renderAll();
   toast('Local data reset.');
+}
+
+function getStaffName() {
+  return localStorage.getItem(STAFF_KEY) || '';
+}
+
+function saveStaffName() {
+  const name = el('staffNameInput').value.trim();
+  localStorage.setItem(STAFF_KEY, name);
+  toast(name ? `Staff name saved: ${name}` : 'Staff name cleared.');
 }
 
 function applyHashScan() {
