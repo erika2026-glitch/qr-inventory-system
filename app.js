@@ -261,7 +261,8 @@ function renderInventory() {
       <td>${formatBlankZero(Math.max(0, endingWeight), 2)}</td>
       <td><span class="pill ${status}">${label}</span></td>
     </tr>`;
-  }).concat(buildInventoryTotalRows(rows)).join('') || `<tr><td colspan="15">No matching items.</td></tr>`;
+  }).join('') || `<tr><td colspan="15">No matching items.</td></tr>`;
+  el('inventoryTotalRows').innerHTML = buildInventoryTotalRows(rows).join('') || `<tr><td colspan="10">No totals.</td></tr>`;
 }
 
 function getItemMovement(itemId) {
@@ -301,7 +302,7 @@ function buildInventoryTotalRows(rows) {
       sum.endingWeight += endingWeight;
       return sum;
     }, emptyTotals());
-    totals.push(totalRowHtml(category, total, 15, true));
+    totals.push(totalRowHtml(category, total, true));
   }
   return totals;
 }
@@ -319,15 +320,11 @@ function emptyTotals() {
   };
 }
 
-function totalRowHtml(category, total, columns, includeCategory) {
-  if (includeCategory) {
+function totalRowHtml(category, total, inventoryTotals) {
+  if (inventoryTotals) {
     return `<tr class="total-row">
-      <td></td>
       <td>${escapeHtml(category)}</td>
       <td>TOTAL</td>
-      <td></td>
-      <td></td>
-      <td></td>
       <td>${formatBlankZero(total.beginningRolls, 0)}</td>
       <td>${formatBlankZero(total.beginningWeight, 2)}</td>
       <td>${formatBlankZero(total.inRolls, 0)}</td>
@@ -336,7 +333,6 @@ function totalRowHtml(category, total, columns, includeCategory) {
       <td>${formatBlankZero(total.outWeight, 2)}</td>
       <td>${formatBlankZero(total.endingRolls, 0)}</td>
       <td>${formatBlankZero(total.endingWeight, 2)}</td>
-      <td></td>
     </tr>`;
   }
 
@@ -425,10 +421,41 @@ function renderReports() {
         <td><span class="pill ${statusClass}">${statusText}</span></td>
       </tr>`);
     });
-    html.push(totalRowHtml(category, total, 10, false));
   }
+  html.push(...buildReportGrandTotals(summaries));
   el('reportRows').innerHTML = html.join('') || `<tr><td colspan="10">No inventory rows.</td></tr>`;
   renderClosedWeeks();
+}
+
+function buildReportGrandTotals(rows) {
+  const totalRows = [];
+  const grouped = groupBy(rows, (row) => row.category || 'Uncategorized');
+  for (const [category, items] of grouped.entries()) {
+    const total = items.reduce((sum, row) => {
+      sum.beginningRolls += row.beginningRolls;
+      sum.beginningWeight += row.beginningWeight;
+      sum.inRolls += row.inRolls;
+      sum.inWeight += row.inWeight;
+      sum.outRolls += row.outRolls;
+      sum.outWeight += row.outWeight;
+      sum.endingRolls += row.endingRolls;
+      sum.endingWeight += row.endingWeight;
+      return sum;
+    }, emptyTotals());
+    totalRows.push(`<tr class="total-row">
+      <td>${escapeHtml(category)} TOTAL</td>
+      <td>${formatBlankZero(total.beginningRolls, 0)}</td>
+      <td>${formatBlankZero(total.beginningWeight, 2)}</td>
+      <td>${formatBlankZero(total.inRolls, 0)}</td>
+      <td>${formatBlankZero(total.inWeight, 2)}</td>
+      <td>${formatBlankZero(total.outRolls, 0)}</td>
+      <td>${formatBlankZero(total.outWeight, 2)}</td>
+      <td>${formatBlankZero(total.endingRolls, 0)}</td>
+      <td>${formatBlankZero(total.endingWeight, 2)}</td>
+      <td></td>
+    </tr>`);
+  }
+  return totalRows;
 }
 
 function buildWeeklySummary(from, to) {

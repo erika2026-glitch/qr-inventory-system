@@ -298,6 +298,10 @@ select {
   background: var(--surface);
 }
 
+.totals-wrap {
+  margin-top: 10px;
+}
+
 .band .table-wrap {
   border: 0;
   border-radius: 0;
