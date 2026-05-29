@@ -668,9 +668,15 @@ dialog form {
 }
 
 @media print {
+  @page {
+    size: landscape;
+    margin: 8mm;
+  }
+
   body {
     display: block;
     background: #fff;
+    color: #000;
   }
 
   .sidebar,
@@ -707,6 +713,74 @@ dialog form {
 
   .shell {
     padding: 0;
+  }
+
+  body[data-print-mode="report"] .report-sheet {
+    border: 0;
+    border-radius: 0;
+  }
+
+  body[data-print-mode="report"] .report-title {
+    border: 0;
+    padding: 0 0 8px;
+  }
+
+  body[data-print-mode="report"] .report-title strong {
+    font-size: 15px;
+    letter-spacing: 0;
+  }
+
+  body[data-print-mode="report"] .report-title span {
+    color: #000;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+
+  body[data-print-mode="report"] .report-table {
+    min-width: 0;
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+  }
+
+  body[data-print-mode="report"] .report-table th,
+  body[data-print-mode="report"] .report-table td {
+    border: 1px solid #000;
+    color: #000;
+    font-size: 8px;
+    line-height: 1.15;
+    padding: 3px 4px;
+    white-space: normal;
+  }
+
+  body[data-print-mode="report"] .report-table th {
+    background: #fff !important;
+    font-weight: 700;
+  }
+
+  body[data-print-mode="report"] .report-table th:first-child,
+  body[data-print-mode="report"] .report-table td:first-child {
+    width: 30%;
+  }
+
+  body[data-print-mode="report"] .category-row td {
+    background: #fff !important;
+    font-weight: 700;
+    text-align: left;
+  }
+
+  body[data-print-mode="report"] .total-row td {
+    background: #fff !important;
+    border-top: 2px solid #000;
+    font-weight: 700;
+  }
+
+  body[data-print-mode="report"] .pill {
+    background: transparent !important;
+    color: #000 !important;
+    padding: 0;
+    min-width: 0;
+    font-size: 8px;
   }
 
   .qr-label {
