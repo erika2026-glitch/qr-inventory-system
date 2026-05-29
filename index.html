@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>QR Inventory</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <aside class="sidebar">
+      <div class="brand">
+        <strong>QR Inventory</strong>
+        <span>Materials control</span>
+      </div>
+      <nav aria-label="Main">
+        <button class="nav-btn active" data-view="dashboard" title="Dashboard">
+          <span class="nav-icon">▦</span><span>Dashboard</span>
+        </button>
+        <button class="nav-btn" data-view="scan" title="Scan">
+          <span class="nav-icon">⌕</span><span>Scan</span>
+        </button>
+        <button class="nav-btn" data-view="inventory" title="Inventory">
+          <span class="nav-icon">≡</span><span>Inventory</span>
+        </button>
+        <button class="nav-btn" data-view="transactions" title="Transactions">
+          <span class="nav-icon">↕</span><span>Transactions</span>
+        </button>
+        <button class="nav-btn" data-view="labels" title="QR Labels">
+          <span class="nav-icon">□</span><span>QR Labels</span>
+        </button>
+        <button class="nav-btn" data-view="settings" title="Settings">
+          <span class="nav-icon">⚙</span><span>Settings</span>
+        </button>
+      </nav>
+    </aside>
+
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <h1 id="viewTitle">Dashboard</h1>
+          <p id="viewSubtitle">Live stock summary and recent movement</p>
+          <p id="syncStatus" class="sync-status">Local mode</p>
+        </div>
+        <div class="top-actions">
+          <button id="exportBtn" class="tool-btn" title="Export transactions">⇩</button>
+          <button id="backupBtn" class="tool-btn" title="Download backup">⬚</button>
+        </div>
+      </header>
+
+      <section id="toast" class="toast" aria-live="polite"></section>
+
+      <section id="dashboard" class="view active">
+        <div class="metrics">
+          <div class="metric"><span>Total rolls</span><strong id="mRolls">0</strong></div>
+          <div class="metric"><span>Total weight</span><strong id="mWeight">0</strong></div>
+          <div class="metric"><span>Items</span><strong id="mItems">0</strong></div>
+          <div class="metric"><span>Today movement</span><strong id="mToday">0</strong></div>
+        </div>
+        <div class="band">
+          <div class="section-head">
+            <h2>Recent Transactions</h2>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>Date</th><th>QR ID</th><th>Item</th><th>Action</th><th>Rolls</th><th>Total weight</th></tr>
+              </thead>
+              <tbody id="recentRows"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="scan" class="view">
+        <div class="scan-layout">
+          <div class="scan-panel">
+            <label for="scanInput">QR ID or QR text</label>
+            <div class="input-row">
+              <input id="scanInput" placeholder="Example: QR-00001 or scanned QR text">
+              <button id="findBtn" class="primary">Find</button>
+            </div>
+            <button id="cameraBtn" class="secondary">Start Camera Scan</button>
+            <video id="scanVideo" playsinline muted></video>
+          </div>
+
+          <div id="scanResult" class="item-panel empty">
+            <h2>No item selected</h2>
+            <p>Scan or enter a QR ID to begin.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="inventory" class="view">
+        <div class="section-head">
+          <div class="filters">
+            <input id="inventorySearch" placeholder="Search product, remarks, QR ID">
+            <select id="categoryFilter"><option value="">All categories</option></select>
+          </div>
+          <button id="addItemBtn" class="primary">Add Item</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>QR ID</th><th>Category</th><th>Product</th><th>Gauge</th><th>M/Roll</th><th>Remarks</th><th>Rolls</th><th>Weight</th><th>Status</th></tr>
+            </thead>
+            <tbody id="inventoryRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="transactions" class="view">
+        <div class="section-head">
+          <div class="filters">
+            <input id="txSearch" placeholder="Search transactions">
+            <select id="txActionFilter">
+              <option value="">All actions</option>
+              <option value="IN">IN</option>
+              <option value="OUT">OUT</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Date</th><th>QR ID</th><th>Item</th><th>Action</th><th>Rolls</th><th>Weight/Roll</th><th>Total</th><th>Balance</th><th>User</th></tr>
+            </thead>
+            <tbody id="transactionRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="labels" class="view">
+        <div class="section-head">
+          <div class="filters">
+            <input id="labelSearch" placeholder="Search labels">
+          </div>
+          <button id="printBtn" class="primary">Print Labels</button>
+        </div>
+        <div id="labelGrid" class="label-grid"></div>
+      </section>
+
+      <section id="settings" class="view">
+        <div class="settings-grid">
+          <div class="settings-panel">
+            <h2>Backup</h2>
+            <p>Save or restore the whole inventory and transaction database.</p>
+            <button id="downloadBackupBtn" class="primary">Download Backup</button>
+            <label class="file-label">
+              Restore Backup
+              <input id="restoreInput" type="file" accept="application/json">
+            </label>
+          </div>
+          <div class="settings-panel">
+            <h2>Reset Demo</h2>
+            <p>Reload the starter data from your current spreadsheet export.</p>
+            <button id="resetBtn" class="danger">Reset Local Data</button>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <dialog id="itemDialog">
+      <form method="dialog" id="itemForm">
+        <h2>Add Item</h2>
+        <div class="form-grid">
+          <label>Category<input name="category" required></label>
+          <label>Product<input name="product" required></label>
+          <label>Gauge<input name="gauge"></label>
+          <label>Meters/Roll<input name="meters"></label>
+          <label>Remarks<input name="remarks"></label>
+          <label>Weight/Roll<input name="weightPerRoll" type="number" step="0.01" min="0"></label>
+          <label>Beginning Rolls<input name="currentRolls" type="number" step="1" min="0" value="0"></label>
+        </div>
+        <div class="dialog-actions">
+          <button type="button" id="cancelItemBtn" class="secondary">Cancel</button>
+          <button type="submit" class="primary">Save Item</button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="data.js"></script>
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>
