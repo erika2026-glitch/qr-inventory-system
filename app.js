@@ -40,7 +40,7 @@ function loadState() {
   }
 
   return {
-    items: (window.STARTER_ITEMS || []).map((item) => ({ ...item })),
+    items: (window.STARTER_ITEMS || []).map((item) => normalizeItemShape(item)),
     transactions: [],
     nextItemNumber: (window.STARTER_ITEMS || []).length + 1
   };
@@ -229,7 +229,12 @@ function renderInventory() {
   });
 
   el('inventoryRows').innerHTML = rows.map((item) => {
-    const status = Number(item.currentRolls || 0) <= 0 ? 'low' : Number(item.currentRolls || 0) <= Number(item.minRolls || 0) ? 'warn' : 'ok';
+    const movement = getItemMovement(item.id);
+    const endingRolls = Number(item.beginningRolls || 0) + movement.inRolls - movement.outRolls;
+    const endingWeight = Number(item.beginningWeight || 0) + movement.inWeight - movement.outWeight;
+    item.currentRolls = endingRolls;
+    item.currentWeight = Math.max(0, endingWeight);
+    const status = endingRolls <= 0 ? 'low' : endingRolls <= Number(item.minRolls || 0) ? 'warn' : 'ok';
     const label = status === 'ok' ? 'OK' : status === 'warn' ? 'LOW' : 'ZERO';
     return `<tr>
       <td>${escapeHtml(item.id)}</td>
@@ -238,11 +243,34 @@ function renderInventory() {
       <td>${escapeHtml(item.gauge)}</td>
       <td>${escapeHtml(item.meters)}</td>
       <td>${escapeHtml(item.remarks)}</td>
-      <td>${formatNumber(item.currentRolls, 0)}</td>
-      <td>${formatNumber(item.currentWeight, 2)}</td>
+      <td>${formatNumber(item.beginningRolls, 0)}</td>
+      <td>${formatNumber(item.beginningWeight, 2)}</td>
+      <td>${formatNumber(movement.inRolls, 0)}</td>
+      <td>${formatNumber(movement.inWeight, 2)}</td>
+      <td>${formatNumber(movement.outRolls, 0)}</td>
+      <td>${formatNumber(movement.outWeight, 2)}</td>
+      <td>${formatNumber(endingRolls, 0)}</td>
+      <td>${formatNumber(Math.max(0, endingWeight), 2)}</td>
       <td><span class="pill ${status}">${label}</span></td>
     </tr>`;
-  }).join('') || `<tr><td colspan="9">No matching items.</td></tr>`;
+  }).join('') || `<tr><td colspan="15">No matching items.</td></tr>`;
+}
+
+function getItemMovement(itemId) {
+  return state.transactions
+    .filter((tx) => tx.itemId === itemId)
+    .reduce((totals, tx) => {
+      const rolls = Number(tx.rolls || 0);
+      const weight = Number(tx.totalWeight || 0);
+      if (tx.action === 'IN') {
+        totals.inRolls += rolls;
+        totals.inWeight += weight;
+      } else if (tx.action === 'OUT') {
+        totals.outRolls += rolls;
+        totals.outWeight += weight;
+      }
+      return totals;
+    }, { inRolls: 0, inWeight: 0, outRolls: 0, outWeight: 0 });
 }
 
 function renderTransactions() {
@@ -591,8 +619,21 @@ function toDbItem(item) {
   };
 }
 
-function fromDbItem(row) {
+function normalizeItemShape(item) {
+  const currentRolls = Number(item.currentRolls || 0);
+  const currentWeight = Number(item.currentWeight || 0);
   return {
+    ...item,
+    beginningRolls: Number(item.beginningRolls ?? currentRolls),
+    beginningWeight: Number(item.beginningWeight ?? currentWeight),
+    currentRolls,
+    currentWeight,
+    minRolls: Number(item.minRolls ?? 1)
+  };
+}
+
+function fromDbItem(row) {
+  return normalizeItemShape({
     id: row.id,
     category: row.category || '',
     product: row.product || '',
@@ -603,7 +644,7 @@ function fromDbItem(row) {
     currentRolls: Number(row.current_rolls || 0),
     currentWeight: Number(row.current_weight || 0),
     minRolls: Number(row.min_rolls || 1)
-  };
+  });
 }
 
 function toDbTransaction(tx) {

@@ -101,7 +101,29 @@
         <div class="table-wrap">
           <table>
             <thead>
-              <tr><th>QR ID</th><th>Category</th><th>Product</th><th>Gauge</th><th>M/Roll</th><th>Remarks</th><th>Rolls</th><th>Weight</th><th>Status</th></tr>
+              <tr>
+                <th rowspan="2">QR ID</th>
+                <th rowspan="2">Category</th>
+                <th rowspan="2">Product</th>
+                <th rowspan="2">Gauge</th>
+                <th rowspan="2">M/Roll</th>
+                <th rowspan="2">Remarks</th>
+                <th colspan="2">Beg. Inventory</th>
+                <th colspan="2">Deliveries</th>
+                <th colspan="2">Issuances</th>
+                <th colspan="2">Ending Inventory</th>
+                <th rowspan="2">Status</th>
+              </tr>
+              <tr>
+                <th>No. of Rolls</th>
+                <th>Equiv. Weight</th>
+                <th>No. of Rolls</th>
+                <th>Equiv. Weight</th>
+                <th>No. of Rolls</th>
+                <th>Equiv. Weight</th>
+                <th>No. of Rolls</th>
+                <th>Equiv. Weight</th>
+              </tr>
             </thead>
             <tbody id="inventoryRows"></tbody>
           </table>
