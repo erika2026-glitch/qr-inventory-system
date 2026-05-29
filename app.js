@@ -457,10 +457,25 @@ function renderReports() {
         <td><span class="pill ${statusClass}">${statusText}</span></td>
       </tr>`);
     });
+    html.push(reportCategoryTotalRow(category, total));
   }
-  html.push(...buildReportGrandTotals(summaries));
   el('reportRows').innerHTML = html.join('') || `<tr><td colspan="10">No inventory rows.</td></tr>`;
   renderClosedWeeks();
+}
+
+function reportCategoryTotalRow(category, total) {
+  return `<tr class="total-row">
+    <td>${escapeHtml(category)} TOTAL</td>
+    <td>${formatBlankZero(total.beginningRolls, 0)}</td>
+    <td>${formatBlankZero(total.beginningWeight, 2)}</td>
+    <td>${formatBlankZero(total.inRolls, 0)}</td>
+    <td>${formatBlankZero(total.inWeight, 2)}</td>
+    <td>${formatBlankZero(total.outRolls, 0)}</td>
+    <td>${formatBlankZero(total.outWeight, 2)}</td>
+    <td>${formatBlankZero(total.endingRolls, 0)}</td>
+    <td>${formatBlankZero(total.endingWeight, 2)}</td>
+    <td></td>
+  </tr>`;
 }
 
 function buildReportGrandTotals(rows) {
