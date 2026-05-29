@@ -165,6 +165,7 @@
           <div class="filters">
             <label>From<input id="reportFrom" type="date"></label>
             <label>To<input id="reportTo" type="date"></label>
+            <label>Category<select id="reportCategoryFilter"><option value="">All categories</option></select></label>
             <button id="applyReportBtn" class="primary">Apply</button>
           </div>
           <div class="filters">
@@ -177,33 +178,39 @@
             <strong>INNOPRINT PACKAGING CONVERTER CORP.</strong>
             <span id="reportRangeTitle">Weekly Inventory Report</span>
           </div>
-          <div class="table-wrap report-table-wrap">
-            <table class="report-table">
-              <thead>
-              <tr>
-                <th rowspan="2">Product Description</th>
-                <th rowspan="2">Gauge</th>
-                <th rowspan="2">Meters<br>Per Roll</th>
-                <th rowspan="2">Remarks</th>
-                <th colspan="2">Beg. Inventory</th>
-                <th colspan="2">Deliveries (+)</th>
-                <th colspan="2">Issuances (-)</th>
-                <th colspan="2">Ending Inventory</th>
-                <th rowspan="2">Status</th>
-                </tr>
-                <tr>
-                  <th>No. of Rolls</th>
-                  <th>Equiv. Weight</th>
-                  <th>No. of Rolls</th>
-                  <th>Equiv. Weight</th>
-                  <th>No. of Rolls</th>
-                  <th>Equiv. Weight</th>
-                  <th>No. of Rolls</th>
-                  <th>Equiv. Weight</th>
-                </tr>
-              </thead>
-              <tbody id="reportRows"></tbody>
-            </table>
+          <div class="report-print-grid">
+            <div class="table-wrap report-table-wrap">
+              <table class="report-table">
+                <thead>
+                  <tr>
+                    <th rowspan="2">Product Description</th>
+                    <th rowspan="2">Gauge</th>
+                    <th rowspan="2">Meters<br>Per Roll</th>
+                    <th rowspan="2">Remarks</th>
+                    <th colspan="2">Beg. Inventory</th>
+                    <th colspan="2">Deliveries (+)</th>
+                    <th colspan="2">Issuances (-)</th>
+                    <th colspan="2">Ending Inventory</th>
+                    <th rowspan="2">Status</th>
+                  </tr>
+                  <tr>
+                    <th>No. of Rolls</th>
+                    <th>Equiv. Weight</th>
+                    <th>No. of Rolls</th>
+                    <th>Equiv. Weight</th>
+                    <th>No. of Rolls</th>
+                    <th>Equiv. Weight</th>
+                    <th>No. of Rolls</th>
+                    <th>Equiv. Weight</th>
+                  </tr>
+                </thead>
+                <tbody id="reportRows"></tbody>
+              </table>
+            </div>
+            <aside class="report-notes">
+              <h3>For use in the following products</h3>
+              <textarea id="reportNotes" placeholder="Type product/use notes here. These notes will print on the right side."></textarea>
+            </aside>
           </div>
         </div>
         <div class="band archive-band">

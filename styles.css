@@ -537,6 +537,33 @@ tr:last-child td {
   border-radius: 0;
 }
 
+.report-print-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  gap: 12px;
+  align-items: start;
+}
+
+.report-notes {
+  padding: 12px;
+  border-left: 1px solid var(--line);
+}
+
+.report-notes h3 {
+  margin: 0 0 10px;
+  font-size: 13px;
+  text-transform: uppercase;
+}
+
+.report-notes textarea {
+  width: 100%;
+  min-height: 360px;
+  resize: vertical;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 10px;
+}
+
 .report-table th,
 .report-table td {
   border: 1px solid #aeb8c2;
@@ -749,6 +776,34 @@ dialog form {
     width: 100%;
     table-layout: fixed;
     border-collapse: collapse;
+  }
+
+  body[data-print-mode="report"] .report-print-grid {
+    display: grid;
+    grid-template-columns: 78% 22%;
+    gap: 5mm;
+  }
+
+  body[data-print-mode="report"] .report-notes {
+    border-left: 0;
+    padding: 0;
+  }
+
+  body[data-print-mode="report"] .report-notes h3 {
+    font-size: 8px;
+    margin: 0 0 6px;
+    text-transform: uppercase;
+  }
+
+  body[data-print-mode="report"] .report-notes textarea {
+    border: 0;
+    min-height: 0;
+    height: auto;
+    padding: 0;
+    font-size: 8px;
+    line-height: 1.25;
+    resize: none;
+    overflow: visible;
   }
 
   body[data-print-mode="report"] .report-table th,

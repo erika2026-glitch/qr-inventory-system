@@ -165,6 +165,7 @@ function bindActions() {
   el('txActionFilter').addEventListener('change', renderTransactions);
   el('labelSearch').addEventListener('input', renderLabels);
   el('applyReportBtn').addEventListener('click', renderReports);
+  el('reportCategoryFilter').addEventListener('change', renderReports);
   el('printReportBtn').addEventListener('click', () => printMode('report'));
   el('closeWeekBtn').addEventListener('click', closeWeek);
   el('printBtn').addEventListener('click', () => printMode('labels'));
@@ -204,6 +205,13 @@ function renderCategories() {
   const categories = [...new Set(activeItems().map((item) => item.category).filter(Boolean))].sort();
   select.innerHTML = '<option value="">All categories</option>' + categories.map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('');
   select.value = current;
+
+  const reportSelect = el('reportCategoryFilter');
+  if (reportSelect) {
+    const reportCurrent = reportSelect.value;
+    reportSelect.innerHTML = '<option value="">All categories</option>' + categories.map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('');
+    reportSelect.value = reportCurrent;
+  }
 }
 
 function renderDashboard() {
@@ -425,10 +433,12 @@ function renderReports() {
   const from = el('reportFrom').value;
   const to = el('reportTo').value;
   const summaries = buildWeeklySummary(from, to);
+  const selectedCategory = el('reportCategoryFilter').value;
+  const filteredSummaries = selectedCategory ? summaries.filter((row) => row.category === selectedCategory) : summaries;
   const rangeText = from && to ? `Inventory Report as of ${formatShortDate(from)} to ${formatShortDate(to)}` : 'Weekly Inventory Report';
   el('reportRangeTitle').textContent = rangeText;
 
-  const grouped = groupBy(summaries, (row) => row.category || 'Uncategorized');
+  const grouped = groupBy(filteredSummaries, (row) => row.category || 'Uncategorized');
   const html = [];
   for (const [category, rows] of grouped.entries()) {
     html.push(`<tr class="category-row"><td colspan="13">${escapeHtml(category)}</td></tr>`);
