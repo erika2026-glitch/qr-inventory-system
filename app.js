@@ -16,6 +16,7 @@ const viewMeta = {
 let selectedItem = null;
 let scanStream = null;
 let scanTimer = null;
+let scanAnimation = null;
 let cloudEnabled = false;
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -415,35 +416,67 @@ async function toggleCameraScan() {
     return;
   }
 
-  if (!('BarcodeDetector' in window)) {
-    toast('Camera QR scanning is not supported in this browser. Use the QR ID input field.');
-    return;
-  }
-
   try {
-    const detector = new BarcodeDetector({ formats: ['qr_code'] });
     const video = el('scanVideo');
     scanStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
     video.srcObject = scanStream;
     video.style.display = 'block';
     await video.play();
     el('cameraBtn').textContent = 'Stop Camera Scan';
-    scanTimer = window.setInterval(async () => {
-      const codes = await detector.detect(video);
-      if (codes.length) {
-        selectScanValue(codes[0].rawValue);
-        stopCamera();
-      }
-    }, 600);
+
+    if ('BarcodeDetector' in window) {
+      const detector = new BarcodeDetector({ formats: ['qr_code'] });
+      scanTimer = window.setInterval(async () => {
+        const codes = await detector.detect(video);
+        if (codes.length) {
+          selectScanValue(codes[0].rawValue);
+          stopCamera();
+        }
+      }, 600);
+      return;
+    }
+
+    if (window.jsQR) {
+      scanWithCanvas(video);
+      return;
+    }
+
+    toast('Camera opened, but QR decoder did not load. Use the QR ID input field.');
   } catch (error) {
     toast(error.message || 'Unable to start camera.');
     stopCamera();
   }
 }
 
+function scanWithCanvas(video) {
+  const canvas = document.createElement('canvas');
+  const context = canvas.getContext('2d', { willReadFrequently: true });
+
+  const tick = () => {
+    if (!scanStream) return;
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      context.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+      const code = window.jsQR(imageData.data, imageData.width, imageData.height);
+      if (code?.data) {
+        selectScanValue(code.data);
+        stopCamera();
+        return;
+      }
+    }
+    scanAnimation = window.requestAnimationFrame(tick);
+  };
+
+  tick();
+}
+
 function stopCamera() {
   if (scanTimer) window.clearInterval(scanTimer);
   scanTimer = null;
+  if (scanAnimation) window.cancelAnimationFrame(scanAnimation);
+  scanAnimation = null;
   if (scanStream) {
     scanStream.getTracks().forEach((track) => track.stop());
   }
