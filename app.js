@@ -445,8 +445,9 @@ function renderReports() {
   const grouped = groupBy(filteredSummaries, (row) => row.category || 'Uncategorized');
   const html = [];
   let reportNumber = 1;
+  let categoryNumber = 1;
   for (const [category, rows] of grouped.entries()) {
-    html.push(`<tr class="category-row"><td colspan="13">${escapeHtml(category)}</td></tr>`);
+    html.push(`<tr class="category-row"><td colspan="12">${romanNumeral(categoryNumber++)}. ${escapeHtml(category)}</td></tr>`);
     const total = emptyTotals();
     rows.forEach((row) => {
       total.beginningRolls += row.beginningRolls;
@@ -458,8 +459,7 @@ function renderReports() {
       total.endingRolls += row.endingRolls;
       total.endingWeight += row.endingWeight;
       html.push(`<tr>
-        <td>${reportNumber++}</td>
-        <td>${escapeHtml(row.item.product)}</td>
+        <td>${reportNumber++} ${escapeHtml(row.item.product)}</td>
         <td>${escapeHtml(row.item.gauge)}</td>
         <td>${escapeHtml(row.item.meters)}</td>
         <td>${escapeHtml(row.item.remarks)}</td>
@@ -475,13 +475,12 @@ function renderReports() {
     });
     html.push(reportCategoryTotalRow(category, total));
   }
-  el('reportRows').innerHTML = html.join('') || `<tr><td colspan="13">No inventory rows.</td></tr>`;
+  el('reportRows').innerHTML = html.join('') || `<tr><td colspan="12">No inventory rows.</td></tr>`;
   renderClosedWeeks();
 }
 
 function reportCategoryTotalRow(category, total) {
   return `<tr class="total-row">
-    <td></td>
     <td>${escapeHtml(category)} TOTAL</td>
     <td></td>
     <td></td>
@@ -495,6 +494,33 @@ function reportCategoryTotalRow(category, total) {
     <td>${formatBlankZero(total.endingRolls, 0)}</td>
     <td>${formatBlankZero(total.endingWeight, 2)}</td>
   </tr>`;
+}
+
+function romanNumeral(value) {
+  const numerals = [
+    [1000, 'M'],
+    [900, 'CM'],
+    [500, 'D'],
+    [400, 'CD'],
+    [100, 'C'],
+    [90, 'XC'],
+    [50, 'L'],
+    [40, 'XL'],
+    [10, 'X'],
+    [9, 'IX'],
+    [5, 'V'],
+    [4, 'IV'],
+    [1, 'I'],
+  ];
+  let number = value;
+  let result = '';
+  for (const [amount, symbol] of numerals) {
+    while (number >= amount) {
+      result += symbol;
+      number -= amount;
+    }
+  }
+  return result || String(value);
 }
 
 function buildReportGrandTotals(rows) {
