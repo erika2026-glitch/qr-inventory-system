@@ -173,6 +173,8 @@ function bindActions() {
   el('backupBtn').addEventListener('click', downloadBackup);
   el('downloadBackupBtn').addEventListener('click', downloadBackup);
   el('restoreInput').addEventListener('change', restoreBackup);
+  el('downloadItemTemplateBtn').addEventListener('click', downloadItemTemplate);
+  el('itemImportInput').addEventListener('change', importItemsCsv);
   el('resetBtn').addEventListener('click', resetLocalData);
   el('saveStaffBtn').addEventListener('click', saveStaffName);
   el('addItemBtn').addEventListener('click', () => el('itemDialog').showModal());
@@ -882,6 +884,133 @@ async function syncNewItemToCloud(item) {
     setSyncStatus('Sync error', 'offline');
     toast(`Item saved locally, but cloud sync failed: ${error.message}`);
   }
+}
+
+async function syncNewItemsToCloud(items) {
+  if (!cloudEnabled || !items.length) return;
+  try {
+    await cloudInsert('items', items.map(toDbItem));
+    setSyncStatus('Online database connected', 'online');
+  } catch (error) {
+    setSyncStatus('Sync error', 'offline');
+    toast(`Items saved locally, but cloud sync failed: ${error.message}`);
+  }
+}
+
+function downloadItemTemplate() {
+  const rows = [
+    ['category', 'product', 'gauge', 'meters', 'remarks', 'weightPerRoll', 'beginningRolls'],
+    ['BOPP PLAIN', '675mm (11-30-23)', '20', '6000', 'WEIFU', '71.80', '6'],
+    ['MATT', '775mm (03-14-25)', '20', '6000', 'JOHNNY-SAMPLE', '27.20', '1']
+  ];
+  const csv = rows.map((row) => row.map(csvCell).join(',')).join('\n');
+  downloadText('qr-inventory-items-template.csv', csv, 'text/csv');
+}
+
+function importItemsCsv(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async () => {
+    try {
+      const rows = parseCsv(reader.result);
+      const importedItems = rowsToImportItems(rows);
+      if (!importedItems.length) throw new Error('No valid item rows found.');
+      state.items.push(...importedItems);
+      state.nextItemNumber = nextItemNumberFromItems(state.items);
+      saveState();
+      await syncNewItemsToCloud(importedItems);
+      renderAll();
+      toast(`Imported ${importedItems.length} item${importedItems.length === 1 ? '' : 's'}.`);
+    } catch (error) {
+      toast(error.message);
+    } finally {
+      event.target.value = '';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function rowsToImportItems(rows) {
+  if (rows.length < 2) return [];
+  const headers = rows[0].map(normalizeHeader);
+  return rows.slice(1).map((row) => {
+    const get = (...names) => {
+      for (const name of names.map(normalizeHeader)) {
+        const index = headers.indexOf(name);
+        if (index >= 0) return String(row[index] || '').trim();
+      }
+      return '';
+    };
+    const category = get('category');
+    const product = get('product', 'product description', 'description', 'item');
+    if (!category && !product) return null;
+    if (!category || !product) throw new Error('Each import row needs category and product.');
+    if (product.trim().toUpperCase() === 'TOTAL') return null;
+    const beginningRolls = parseImportNumber(get('beginningRolls', 'beg rolls', 'no of rolls', 'current rolls', 'rolls'));
+    const beginningWeight = parseImportNumber(get('beginningWeight', 'beg weight', 'current weight'));
+    const weightPerRoll = parseImportNumber(get('weightPerRoll', 'weight per roll')) || (beginningRolls ? beginningWeight / beginningRolls : 0);
+    const currentWeight = beginningWeight || beginningRolls * weightPerRoll;
+    return normalizeItemShape({
+      id: `QR-${String(state.nextItemNumber++).padStart(5, '0')}`,
+      category,
+      product,
+      gauge: get('gauge', 'gau'),
+      meters: get('meters', 'meters per roll', 'meter per roll', 'm/roll'),
+      remarks: get('remarks', 'remark'),
+      weightPerRoll,
+      currentRolls: beginningRolls,
+      currentWeight,
+      beginningRolls,
+      beginningWeight: currentWeight,
+      minRolls: 1
+    });
+  }).filter(Boolean);
+}
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let value = '';
+  let quoted = false;
+  const input = String(text || '').replace(/^\uFEFF/, '');
+  for (let index = 0; index < input.length; index++) {
+    const char = input[index];
+    const next = input[index + 1];
+    if (quoted) {
+      if (char === '"' && next === '"') {
+        value += '"';
+        index++;
+      } else if (char === '"') {
+        quoted = false;
+      } else {
+        value += char;
+      }
+    } else if (char === '"') {
+      quoted = true;
+    } else if (char === ',') {
+      row.push(value);
+      value = '';
+    } else if (char === '\n') {
+      row.push(value);
+      if (row.some((cell) => String(cell).trim())) rows.push(row);
+      row = [];
+      value = '';
+    } else if (char !== '\r') {
+      value += char;
+    }
+  }
+  row.push(value);
+  if (row.some((cell) => String(cell).trim())) rows.push(row);
+  return rows;
+}
+
+function normalizeHeader(value) {
+  return String(value || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+}
+
+function parseImportNumber(value) {
+  return Number(String(value || '').replace(/,/g, '').trim()) || 0;
 }
 
 async function syncClosedWeekToCloud(summary) {

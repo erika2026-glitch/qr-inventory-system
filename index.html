@@ -181,8 +181,24 @@
           <div class="report-print-grid">
             <div class="table-wrap report-table-wrap">
               <table class="report-table">
+                <colgroup>
+                  <col class="c-no">
+                  <col class="c-product">
+                  <col class="c-gauge">
+                  <col class="c-meters">
+                  <col class="c-remarks">
+                  <col class="c-small">
+                  <col class="c-weight">
+                  <col class="c-small">
+                  <col class="c-weight">
+                  <col class="c-small">
+                  <col class="c-weight">
+                  <col class="c-small">
+                  <col class="c-weight">
+                </colgroup>
                 <thead>
                   <tr>
+                    <th rowspan="2">No.</th>
                     <th rowspan="2">Product Description</th>
                     <th rowspan="2">Gauge</th>
                     <th rowspan="2">Meters<br>Per Roll</th>
@@ -191,17 +207,16 @@
                     <th colspan="2">Deliveries (+)</th>
                     <th colspan="2">Issuances (-)</th>
                     <th colspan="2">Ending Inventory</th>
-                    <th rowspan="2">Status</th>
                   </tr>
                   <tr>
-                    <th>No. of Rolls</th>
-                    <th>Equiv. Weight</th>
-                    <th>No. of Rolls</th>
-                    <th>Equiv. Weight</th>
-                    <th>No. of Rolls</th>
-                    <th>Equiv. Weight</th>
-                    <th>No. of Rolls</th>
-                    <th>Equiv. Weight</th>
+                    <th>No. of<br>Rolls</th>
+                    <th>Equiv.<br>Weight</th>
+                    <th>No. of<br>Rolls</th>
+                    <th>Equiv.<br>Weight</th>
+                    <th>No. of<br>Rolls</th>
+                    <th>Equiv.<br>Weight</th>
+                    <th>No. of<br>Rolls</th>
+                    <th>Equiv.<br>Weight</th>
                   </tr>
                 </thead>
                 <tbody id="reportRows"></tbody>
@@ -256,6 +271,15 @@
             <label class="file-label">
               Restore Backup
               <input id="restoreInput" type="file" accept="application/json">
+            </label>
+          </div>
+          <div class="settings-panel">
+            <h2>Import Items</h2>
+            <p>Add many new inventory items from a CSV file. QR IDs will be created automatically.</p>
+            <button id="downloadItemTemplateBtn" class="secondary">Download CSV Template</button>
+            <label class="file-label">
+              Upload Items CSV
+              <input id="itemImportInput" type="file" accept=".csv,text/csv">
             </label>
           </div>
           <div class="settings-panel">
