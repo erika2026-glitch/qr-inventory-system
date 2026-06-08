@@ -579,32 +579,37 @@ tr:last-child td {
   width: 100%;
 }
 
-.report-table .c-product {
-  width: 28%;
-}
-
-.report-table .c-gauge {
+.report-table .c-no {
   width: 5%;
 }
 
-.report-table .c-meters {
+.report-table .c-product {
+  width: 30%;
+}
+
+.report-table .c-gauge {
   width: 7%;
 }
 
-.report-table .c-remarks {
+.report-table .c-meters {
   width: 8%;
 }
 
-.report-table .c-small {
-  width: 5.5%;
+.report-table .c-remarks {
+  width: 10%;
 }
 
-.report-table .c-weight {
-  width: 6.75%;
+.report-table .c-combo {
+  width: 10%;
 }
 
 .report-table th:first-child,
 .report-table td:first-child {
+  text-align: center;
+}
+
+.report-table th:nth-child(2),
+.report-table td:nth-child(2) {
   text-align: left;
 }
 

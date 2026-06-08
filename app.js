@@ -447,7 +447,7 @@ function renderReports() {
   let reportNumber = 1;
   let categoryNumber = 1;
   for (const [category, rows] of grouped.entries()) {
-    html.push(`<tr class="category-row"><td colspan="12">${romanNumeral(categoryNumber++)}. ${escapeHtml(category)}</td></tr>`);
+    html.push(`<tr class="category-row"><td colspan="9">${romanNumeral(categoryNumber++)}. ${escapeHtml(category)}</td></tr>`);
     const total = emptyTotals();
     rows.forEach((row) => {
       total.beginningRolls += row.beginningRolls;
@@ -459,40 +459,34 @@ function renderReports() {
       total.endingRolls += row.endingRolls;
       total.endingWeight += row.endingWeight;
       html.push(`<tr>
-        <td>${reportNumber++} ${escapeHtml(row.item.product)}</td>
+        <td>${reportNumber++}</td>
+        <td>${escapeHtml(row.item.product)}</td>
         <td>${escapeHtml(row.item.gauge)}</td>
         <td>${escapeHtml(row.item.meters)}</td>
         <td>${escapeHtml(row.item.remarks)}</td>
-        <td>${formatBlankZero(row.beginningRolls, 0)}</td>
-        <td>${formatBlankZero(row.beginningWeight, 2)}</td>
-        <td>${formatBlankZero(row.inRolls, 0)}</td>
-        <td>${formatBlankZero(row.inWeight, 2)}</td>
-        <td>${formatBlankZero(row.outRolls, 0)}</td>
-        <td>${formatBlankZero(row.outWeight, 2)}</td>
-        <td>${formatBlankZero(row.endingRolls, 0)}</td>
-        <td>${formatBlankZero(row.endingWeight, 2)}</td>
+        <td>${formatRollWeight(row.beginningRolls, row.beginningWeight)}</td>
+        <td>${formatRollWeight(row.inRolls, row.inWeight)}</td>
+        <td>${formatRollWeight(row.outRolls, row.outWeight)}</td>
+        <td>${formatRollWeight(row.endingRolls, row.endingWeight)}</td>
       </tr>`);
     });
     html.push(reportCategoryTotalRow(category, total));
   }
-  el('reportRows').innerHTML = html.join('') || `<tr><td colspan="12">No inventory rows.</td></tr>`;
+  el('reportRows').innerHTML = html.join('') || `<tr><td colspan="9">No inventory rows.</td></tr>`;
   renderClosedWeeks();
 }
 
 function reportCategoryTotalRow(category, total) {
   return `<tr class="total-row">
+    <td></td>
     <td>${escapeHtml(category)} TOTAL</td>
     <td></td>
     <td></td>
     <td></td>
-    <td>${formatBlankZero(total.beginningRolls, 0)}</td>
-    <td>${formatBlankZero(total.beginningWeight, 2)}</td>
-    <td>${formatBlankZero(total.inRolls, 0)}</td>
-    <td>${formatBlankZero(total.inWeight, 2)}</td>
-    <td>${formatBlankZero(total.outRolls, 0)}</td>
-    <td>${formatBlankZero(total.outWeight, 2)}</td>
-    <td>${formatBlankZero(total.endingRolls, 0)}</td>
-    <td>${formatBlankZero(total.endingWeight, 2)}</td>
+    <td>${formatRollWeight(total.beginningRolls, total.beginningWeight)}</td>
+    <td>${formatRollWeight(total.inRolls, total.inWeight)}</td>
+    <td>${formatRollWeight(total.outRolls, total.outWeight)}</td>
+    <td>${formatRollWeight(total.endingRolls, total.endingWeight)}</td>
   </tr>`;
 }
 
@@ -1366,6 +1360,12 @@ function formatNumber(value, decimals) {
 function formatBlankZero(value, decimals) {
   const number = Number(value || 0);
   return number === 0 ? '' : formatNumber(number, decimals);
+}
+
+function formatRollWeight(rolls, weight) {
+  const rollText = formatBlankZero(rolls, 0);
+  const weightText = formatBlankZero(weight, 2);
+  return rollText || weightText ? `${rollText || '0'} / ${weightText || '0.00'}` : '';
 }
 
 function formatDate(value) {
