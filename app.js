@@ -422,9 +422,11 @@ function renderTransactions() {
 function initializeReportDates() {
   const today = new Date();
   const start = new Date(today);
-  start.setDate(today.getDate() - today.getDay() + 1);
+  const day = today.getDay();
+  const mondayOffset = day === 0 ? -6 : 1 - day;
+  start.setDate(today.getDate() + mondayOffset);
   const end = new Date(start);
-  end.setDate(start.getDate() + 6);
+  end.setDate(start.getDate() + 5);
   if (!el('reportFrom').value) el('reportFrom').value = toDateInput(start);
   if (!el('reportTo').value) el('reportTo').value = toDateInput(end);
 }
@@ -440,6 +442,7 @@ function renderReports() {
 
   const grouped = groupBy(filteredSummaries, (row) => row.category || 'Uncategorized');
   const html = [];
+  let reportNumber = 1;
   for (const [category, rows] of grouped.entries()) {
     html.push(`<tr class="category-row"><td colspan="13">${escapeHtml(category)}</td></tr>`);
     const total = emptyTotals();
@@ -452,9 +455,8 @@ function renderReports() {
       total.outWeight += row.outWeight;
       total.endingRolls += row.endingRolls;
       total.endingWeight += row.endingWeight;
-      const statusClass = row.endingRolls <= 0 ? 'low' : row.endingRolls <= Number(row.item.minRolls || 0) ? 'warn' : 'ok';
-      const statusText = statusClass === 'ok' ? 'OK' : statusClass === 'warn' ? 'LOW' : 'ZERO';
       html.push(`<tr>
+        <td>${reportNumber++}</td>
         <td>${escapeHtml(row.item.product)}</td>
         <td>${escapeHtml(row.item.gauge)}</td>
         <td>${escapeHtml(row.item.meters)}</td>
@@ -467,7 +469,6 @@ function renderReports() {
         <td>${formatBlankZero(row.outWeight, 2)}</td>
         <td>${formatBlankZero(row.endingRolls, 0)}</td>
         <td>${formatBlankZero(row.endingWeight, 2)}</td>
-        <td><span class="pill ${statusClass}">${statusText}</span></td>
       </tr>`);
     });
     html.push(reportCategoryTotalRow(category, total));
@@ -478,6 +479,7 @@ function renderReports() {
 
 function reportCategoryTotalRow(category, total) {
   return `<tr class="total-row">
+    <td></td>
     <td>${escapeHtml(category)} TOTAL</td>
     <td></td>
     <td></td>
@@ -490,7 +492,6 @@ function reportCategoryTotalRow(category, total) {
     <td>${formatBlankZero(total.outWeight, 2)}</td>
     <td>${formatBlankZero(total.endingRolls, 0)}</td>
     <td>${formatBlankZero(total.endingWeight, 2)}</td>
-    <td></td>
   </tr>`;
 }
 
@@ -519,7 +520,6 @@ function buildReportGrandTotals(rows) {
       <td>${formatBlankZero(total.outWeight, 2)}</td>
       <td>${formatBlankZero(total.endingRolls, 0)}</td>
       <td>${formatBlankZero(total.endingWeight, 2)}</td>
-      <td></td>
     </tr>`);
   }
   return totalRows;
