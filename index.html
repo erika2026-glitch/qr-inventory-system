@@ -275,11 +275,11 @@
           </div>
           <div class="settings-panel">
             <h2>Import Items</h2>
-            <p>Add many new inventory items from a CSV file. QR IDs will be created automatically.</p>
+            <p>Add many new inventory items from an Excel or CSV file. QR IDs will be created automatically.</p>
             <button id="downloadItemTemplateBtn" class="secondary">Download CSV Template</button>
             <label class="file-label">
-              Upload Items CSV
-              <input id="itemImportInput" type="file" accept=".csv,text/csv">
+              Upload Items File
+              <input id="itemImportInput" type="file" accept=".xlsx,.xls,.csv,text/csv">
             </label>
           </div>
           <div class="settings-panel">
@@ -312,6 +312,7 @@
 
     <script src="data.js"></script>
     <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
     <script src="app.js"></script>
   </body>

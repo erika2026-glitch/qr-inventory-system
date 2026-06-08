@@ -913,7 +913,9 @@ function importItemsCsv(event) {
   const reader = new FileReader();
   reader.onload = async () => {
     try {
-      const rows = parseCsv(reader.result);
+      const rows = file.name.toLowerCase().endsWith('.csv')
+        ? parseCsv(reader.result)
+        : parseWorkbookRows(reader.result);
       const importedItems = rowsToImportItems(rows);
       if (!importedItems.length) throw new Error('No valid item rows found.');
       state.items.push(...importedItems);
@@ -928,11 +930,23 @@ function importItemsCsv(event) {
       event.target.value = '';
     }
   };
-  reader.readAsText(file);
+  if (file.name.toLowerCase().endsWith('.csv')) {
+    reader.readAsText(file);
+  } else {
+    reader.readAsArrayBuffer(file);
+  }
 }
 
 function rowsToImportItems(rows) {
   if (rows.length < 2) return [];
+  const templateHeaderIndex = findHeaderRowIndex(rows, ['category', 'product']);
+  if (templateHeaderIndex >= 0) {
+    return rowsToTemplateItems(rows.slice(templateHeaderIndex));
+  }
+  return rowsToReportItems(rows);
+}
+
+function rowsToTemplateItems(rows) {
   const headers = rows[0].map(normalizeHeader);
   return rows.slice(1).map((row) => {
     const get = (...names) => {
@@ -966,6 +980,87 @@ function rowsToImportItems(rows) {
       minRolls: 1
     });
   }).filter(Boolean);
+}
+
+function rowsToReportItems(rows) {
+  const headerIndex = findHeaderRowIndex(rows, ['productdescription']);
+  if (headerIndex < 0) throw new Error('Could not find Product Description header in this file.');
+  const headerRow = rows[headerIndex].map(normalizeHeader);
+  const subHeaderRow = (rows[headerIndex + 1] || []).map(normalizeHeader);
+  const productIndex = findColumn(headerRow, ['productdescription', 'description', 'product']);
+  const gaugeIndex = findColumn(headerRow, ['gauge', 'gau']);
+  const metersIndex = findColumn(headerRow, ['metersperroll', 'meterperroll', 'mroll', 'meters']);
+  const remarksIndex = findColumn(headerRow, ['remarks', 'remark']);
+  const begRollsIndex = findBeginningColumn(headerRow, subHeaderRow, ['noofrolls', 'norolls', 'rolls']);
+  const begWeightIndex = findBeginningColumn(headerRow, subHeaderRow, ['equivweight', 'weight']);
+  const imported = [];
+  let currentCategory = '';
+
+  rows.slice(headerIndex + 1).forEach((row) => {
+    const cells = row.map((cell) => String(cell || '').trim());
+    const joined = cells.filter(Boolean).join(' ').trim();
+    if (!joined) return;
+    const first = cells[0] || '';
+    let product = productIndex >= 0 ? cells[productIndex] : first;
+    if (productIndex === 0 && /^\d+$/.test(product) && cells[1]) {
+      product = cells[1];
+    }
+    if (/^(product description|no\.? of|equiv\.?|gauge|meters)/i.test(joined)) return;
+    const categoryMatch = joined.match(/^(?:[IVXLCDM]+\.|\d+\.)\s*(.+)$/i);
+    const hasNumbers = cells.some((cell) => parseImportNumber(cell) > 0);
+    if (categoryMatch && !hasNumbers) {
+      currentCategory = categoryMatch[1].trim();
+      return;
+    }
+    if (!product || product.toUpperCase() === 'TOTAL') return;
+
+    const beginningRolls = begRollsIndex >= 0 ? parseImportNumber(cells[begRollsIndex]) : 0;
+    const beginningWeight = begWeightIndex >= 0 ? parseImportNumber(cells[begWeightIndex]) : 0;
+    const weightPerRoll = beginningRolls ? beginningWeight / beginningRolls : 0;
+    imported.push(normalizeItemShape({
+      id: `QR-${String(state.nextItemNumber++).padStart(5, '0')}`,
+      category: currentCategory,
+      product,
+      gauge: gaugeIndex >= 0 ? cells[gaugeIndex] : '',
+      meters: metersIndex >= 0 ? cells[metersIndex] : '',
+      remarks: remarksIndex >= 0 ? cells[remarksIndex] : '',
+      weightPerRoll,
+      currentRolls: beginningRolls,
+      currentWeight: beginningWeight,
+      beginningRolls,
+      beginningWeight,
+      minRolls: 1
+    }));
+  });
+  return imported;
+}
+
+function parseWorkbookRows(buffer) {
+  if (!window.XLSX) throw new Error('Excel reader is still loading. Try again in a few seconds.');
+  const workbook = XLSX.read(buffer, { type: 'array' });
+  const sheet = workbook.Sheets[workbook.SheetNames[0]];
+  return XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+}
+
+function findHeaderRowIndex(rows, requiredHeaders) {
+  return rows.findIndex((row) => {
+    const headers = row.map(normalizeHeader);
+    return requiredHeaders.every((header) => headers.includes(normalizeHeader(header)));
+  });
+}
+
+function findColumn(headers, names) {
+  return headers.findIndex((header) => names.map(normalizeHeader).includes(header));
+}
+
+function findBeginningColumn(headerRow, subHeaderRow, names) {
+  const begStart = headerRow.findIndex((header) => header.includes('beginventory') || header.includes('beginninginventory'));
+  const start = begStart >= 0 ? begStart : 0;
+  for (let index = start; index < subHeaderRow.length; index++) {
+    if (index > start + 2 && begStart >= 0) break;
+    if (names.map(normalizeHeader).includes(subHeaderRow[index])) return index;
+  }
+  return findColumn(subHeaderRow, names);
 }
 
 function parseCsv(text) {
