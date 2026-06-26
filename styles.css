@@ -488,6 +488,10 @@ tr:last-child td {
   padding: 16px;
 }
 
+#cloudErrorText {
+  overflow-wrap: anywhere;
+}
+
 .report-controls label {
   display: grid;
   gap: 4px;

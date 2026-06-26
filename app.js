@@ -20,6 +20,7 @@ let scanStream = null;
 let scanTimer = null;
 let scanAnimation = null;
 let cloudEnabled = false;
+let cloudLastError = '';
 
 document.addEventListener('DOMContentLoaded', async () => {
   bindNavigation();
@@ -55,12 +56,16 @@ function saveState() {
 
 async function initCloud() {
   if (!SUPABASE?.url || !SUPABASE?.key) {
+    cloudLastError = 'Missing Supabase URL or publishable key in config.js.';
     setSyncStatus('Local mode', 'offline');
+    updateCloudErrorText();
     return;
   }
 
   try {
     setSyncStatus('Connecting to Supabase...', '');
+    cloudLastError = '';
+    updateCloudErrorText();
     const cloudItems = await cloudSelect('items', 'select=*&order=id.asc');
     if (!cloudItems.length) {
       await seedCloudItems();
@@ -77,9 +82,12 @@ async function initCloud() {
     saveState();
     cloudEnabled = true;
     setSyncStatus('Online database connected', 'online');
+    updateCloudErrorText();
   } catch (error) {
     cloudEnabled = false;
+    cloudLastError = error.message || String(error);
     setSyncStatus('Offline/local fallback', 'offline');
+    updateCloudErrorText();
     toast(`Supabase not connected: ${error.message}`);
   }
 }
@@ -147,6 +155,18 @@ function setSyncStatus(message, status) {
   box.className = `sync-status ${status || ''}`;
 }
 
+function updateCloudErrorText() {
+  const text = el('cloudErrorText');
+  if (!text) return;
+  if (cloudEnabled) {
+    text.textContent = 'Online database connected.';
+  } else if (cloudLastError) {
+    text.textContent = `Last error: ${cloudLastError}`;
+  } else {
+    text.textContent = 'Use this if the app says Offline/local fallback.';
+  }
+}
+
 function bindNavigation() {
   document.querySelectorAll('.nav-btn').forEach((button) => {
     button.addEventListener('click', () => showView(button.dataset.view));
@@ -173,6 +193,7 @@ function bindActions() {
   el('backupBtn').addEventListener('click', downloadBackup);
   el('downloadBackupBtn').addEventListener('click', downloadBackup);
   el('restoreInput').addEventListener('change', restoreBackup);
+  el('retryCloudBtn').addEventListener('click', retryCloudConnection);
   el('downloadItemTemplateBtn').addEventListener('click', downloadItemTemplate);
   el('itemImportInput').addEventListener('change', importItemsCsv);
   el('resetBtn').addEventListener('click', resetLocalData);
@@ -182,6 +203,7 @@ function bindActions() {
   el('itemForm').addEventListener('submit', saveNewItem);
   initializeReportDates();
   el('staffNameInput').value = getStaffName();
+  updateCloudErrorText();
 }
 
 function showView(view) {
@@ -1193,6 +1215,12 @@ function saveStaffName() {
   const name = el('staffNameInput').value.trim();
   localStorage.setItem(STAFF_KEY, name);
   toast(name ? `Staff name saved: ${name}` : 'Staff name cleared.');
+}
+
+async function retryCloudConnection() {
+  await initCloud();
+  renderAll();
+  toast(cloudEnabled ? 'Online database connected.' : 'Still offline. Check the error in Settings.');
 }
 
 function applyHashScan() {
