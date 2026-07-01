@@ -753,7 +753,7 @@ function postTransaction(action) {
   if (!selectedItem) return;
   const rolls = Number(document.getElementById('actionRolls').value);
   const user = document.getElementById('actionUser').value.trim();
-  const issuedFor = action === 'OUT' ? document.getElementById('issuedForInput').value.trim() : '';
+  let issuedFor = action === 'OUT' ? document.getElementById('issuedForInput').value.trim() : '';
   const actionLabel = action === 'IN' ? 'DELIVERY' : 'ISSUANCE';
 
   if (!Number.isFinite(rolls) || rolls <= 0) {
@@ -763,6 +763,15 @@ function postTransaction(action) {
   if (action === 'OUT' && rolls > Number(selectedItem.currentRolls || 0)) {
     toast(`Blocked: only ${formatNumber(selectedItem.currentRolls, 0)} roll(s) available.`);
     return;
+  }
+  if (action === 'OUT' && !issuedFor) {
+    issuedFor = prompt('Issued for / Job Order?', 'Printing - JO 026-E-065')?.trim() || '';
+    if (issuedFor) {
+      document.getElementById('issuedForInput').value = issuedFor;
+    } else {
+      toast('Enter Issued For / Job Order before posting issuance.');
+      return;
+    }
   }
 
   const weightPerRoll = Number(selectedItem.weightPerRoll || 0);
