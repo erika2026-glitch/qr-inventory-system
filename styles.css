@@ -645,12 +645,17 @@ tr:last-child td {
 
 .toast {
   display: none;
-  margin-bottom: 12px;
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 30;
+  width: min(360px, calc(100vw - 28px));
   border-radius: var(--radius);
-  padding: 10px 12px;
+  padding: 12px 14px;
   background: #e8f0fe;
   color: var(--blue-dark);
   border: 1px solid #bfd2f6;
+  box-shadow: 0 16px 34px rgba(16, 24, 32, .18);
 }
 
 .toast.show {
@@ -718,6 +723,12 @@ dialog form {
 
   .shell {
     padding: 14px;
+  }
+
+  .toast {
+    right: 14px;
+    bottom: 14px;
+    width: calc(100vw - 28px);
   }
 
   .topbar,
