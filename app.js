@@ -423,7 +423,7 @@ function renderTransactions() {
   const action = el('txActionFilter').value;
   const rows = state.transactions.filter((tx) => {
     const item = state.items.find((row) => row.id === tx.itemId) || {};
-    const text = `${tx.itemId} ${item.product || tx.product || ''} ${tx.action} ${tx.user || ''}`.toLowerCase();
+    const text = `${tx.itemId} ${item.product || tx.product || ''} ${tx.action} ${tx.issuedFor || ''} ${tx.user || ''}`.toLowerCase();
     return (!query || text.includes(query)) && (!action || tx.action === action);
   }).slice().reverse();
 
@@ -438,9 +438,10 @@ function renderTransactions() {
       <td>${formatNumber(tx.weightPerRoll, 2)}</td>
       <td>${formatNumber(tx.totalWeight, 2)}</td>
       <td>${formatNumber(tx.balanceAfter, 0)}</td>
+      <td>${escapeHtml(tx.issuedFor || '')}</td>
       <td>${escapeHtml(tx.user || '')}</td>
     </tr>`;
-  }).join('') || `<tr><td colspan="9">No transactions yet.</td></tr>`;
+  }).join('') || `<tr><td colspan="10">No transactions yet.</td></tr>`;
 }
 
 function initializeReportDates() {
@@ -738,6 +739,7 @@ function renderScanResult() {
     <div class="action-form">
       <label>Rolls<input id="actionRolls" type="number" min="1" step="1" value="1"></label>
       <label>Scanned By<input id="actionUser" placeholder="Name or initials" value="${escapeHtml(getStaffName())}"></label>
+      <label class="wide">Issued For / Job Order<input id="issuedForInput" placeholder="Example: Printing - JO 026-E-065"></label>
       <button class="primary" id="postInBtn">Delivery</button>
       <button class="danger" id="postOutBtn">Issuance</button>
     </div>
@@ -751,6 +753,7 @@ function postTransaction(action) {
   if (!selectedItem) return;
   const rolls = Number(document.getElementById('actionRolls').value);
   const user = document.getElementById('actionUser').value.trim();
+  const issuedFor = action === 'OUT' ? document.getElementById('issuedForInput').value.trim() : '';
   const actionLabel = action === 'IN' ? 'DELIVERY' : 'ISSUANCE';
 
   if (!Number.isFinite(rolls) || rolls <= 0) {
@@ -778,6 +781,7 @@ function postTransaction(action) {
     weightPerRoll,
     totalWeight,
     balanceAfter: selectedItem.currentRolls,
+    issuedFor,
     user
   });
   if (user) {
@@ -796,7 +800,15 @@ function postTransaction(action) {
 async function syncTransactionToCloud(item, transaction) {
   if (!cloudEnabled) return;
   try {
-    await cloudInsert('transactions', [toDbTransaction(transaction)]);
+    try {
+      await cloudInsert('transactions', [toDbTransaction(transaction)]);
+    } catch (error) {
+      if (!String(error.message || error).toLowerCase().includes('issued_for')) throw error;
+      const row = toDbTransaction(transaction);
+      delete row.issued_for;
+      await cloudInsert('transactions', [row]);
+      toast('Saved online without Issued For. Add the issued_for column in Supabase to sync this field.');
+    }
     await cloudPatch('items', 'id', item.id, {
       current_rolls: item.currentRolls,
       current_weight: item.currentWeight
@@ -1164,8 +1176,8 @@ async function syncClosedWeekToCloud(summary) {
 }
 
 function exportTransactionsCsv() {
-  const headers = ['Timestamp', 'QR ID', 'Product', 'Action', 'Rolls', 'Weight/Roll', 'Total Weight', 'Balance After', 'User'];
-  const rows = state.transactions.map((tx) => [tx.timestamp, tx.itemId, tx.product, tx.action, tx.rolls, tx.weightPerRoll, tx.totalWeight, tx.balanceAfter, tx.user || '']);
+  const headers = ['Timestamp', 'QR ID', 'Product', 'Action', 'Rolls', 'Weight/Roll', 'Total Weight', 'Balance After', 'Issued For', 'User'];
+  const rows = state.transactions.map((tx) => [tx.timestamp, tx.itemId, tx.product, tx.action, tx.rolls, tx.weightPerRoll, tx.totalWeight, tx.balanceAfter, tx.issuedFor || '', tx.user || '']);
   downloadText('transactions.csv', [headers, ...rows].map((row) => row.map(csvCell).join(',')).join('\n'), 'text/csv');
 }
 
@@ -1293,6 +1305,7 @@ function toDbTransaction(tx) {
     weight_per_roll: tx.weightPerRoll,
     total_weight: tx.totalWeight,
     balance_after: tx.balanceAfter,
+    issued_for: tx.issuedFor || '',
     user_name: tx.user || ''
   };
 }
@@ -1308,6 +1321,7 @@ function fromDbTransaction(row) {
     weightPerRoll: Number(row.weight_per_roll || 0),
     totalWeight: Number(row.total_weight || 0),
     balanceAfter: Number(row.balance_after || 0),
+    issuedFor: row.issued_for || '',
     user: row.user_name || ''
   };
 }
