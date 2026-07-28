@@ -186,6 +186,8 @@ function bindActions() {
   el('labelSearch').addEventListener('input', renderLabels);
   el('applyReportBtn').addEventListener('click', renderReports);
   el('reportCategoryFilter').addEventListener('change', renderReports);
+  el('joUsageSearch').addEventListener('input', renderJobOrderUsageReport);
+  el('exportJoUsageBtn').addEventListener('click', exportJobOrderUsageCsv);
   el('printReportBtn').addEventListener('click', () => printMode('report'));
   el('closeWeekBtn').addEventListener('click', closeWeek);
   el('printBtn').addEventListener('click', () => printMode('labels'));
@@ -220,6 +222,7 @@ function renderAll() {
   renderInventory();
   renderTransactions();
   renderReports();
+  renderJobOrderUsageReport();
   renderLabels();
 }
 
@@ -496,7 +499,78 @@ function renderReports() {
     html.push(reportCategoryTotalRow(category, total));
   }
   el('reportRows').innerHTML = html.join('') || `<tr><td colspan="9">No inventory rows.</td></tr>`;
+  renderJobOrderUsageReport();
   renderClosedWeeks();
+}
+
+function renderJobOrderUsageReport() {
+  const rows = buildJobOrderUsageRows();
+  const html = [];
+  let grandRolls = 0;
+  let grandWeight = 0;
+
+  for (const [issuedFor, txRows] of groupBy(rows, (row) => row.issuedFor).entries()) {
+    const totalRolls = txRows.reduce((sum, row) => sum + Number(row.rolls || 0), 0);
+    const totalWeight = txRows.reduce((sum, row) => sum + Number(row.totalWeight || 0), 0);
+    grandRolls += totalRolls;
+    grandWeight += totalWeight;
+    html.push(`<tr class="category-row"><td colspan="11">${escapeHtml(issuedFor)} - ${formatNumber(totalRolls, 0)} roll(s) / ${formatNumber(totalWeight, 2)} kg</td></tr>`);
+    txRows.forEach((row) => {
+      html.push(`<tr>
+        <td>${escapeHtml(row.issuedFor)}</td>
+        <td>${formatDate(row.timestamp)}</td>
+        <td>${escapeHtml(row.itemId)}</td>
+        <td>${escapeHtml(row.category)}</td>
+        <td>${escapeHtml(row.product)}</td>
+        <td>${escapeHtml(row.gauge)}</td>
+        <td>${escapeHtml(row.meters)}</td>
+        <td>${escapeHtml(row.remarks)}</td>
+        <td>${formatNumber(row.rolls, 0)}</td>
+        <td>${formatNumber(row.totalWeight, 2)}</td>
+        <td>${escapeHtml(row.user || '')}</td>
+      </tr>`);
+    });
+  }
+
+  if (html.length) {
+    html.push(`<tr class="total-row"><td colspan="8">GRAND TOTAL</td><td>${formatNumber(grandRolls, 0)}</td><td>${formatNumber(grandWeight, 2)}</td><td></td></tr>`);
+  }
+
+  el('joUsageRows').innerHTML = html.join('') || `<tr><td colspan="11">No issued rolls with JO / Issued For for this period.</td></tr>`;
+}
+
+function buildJobOrderUsageRows() {
+  const from = el('reportFrom').value;
+  const to = el('reportTo').value;
+  const query = (el('joUsageSearch')?.value || '').trim().toLowerCase();
+  const fromDate = from ? new Date(`${from}T00:00:00`) : null;
+  const toDate = to ? new Date(`${to}T23:59:59`) : null;
+
+  return state.transactions
+    .filter((tx) => {
+      const date = new Date(tx.timestamp);
+      return tx.action === 'OUT'
+        && String(tx.issuedFor || '').trim()
+        && (!fromDate || date >= fromDate)
+        && (!toDate || date <= toDate);
+    })
+    .map((tx) => {
+      const item = state.items.find((row) => row.id === tx.itemId) || {};
+      return {
+        ...tx,
+        issuedFor: String(tx.issuedFor || '').trim(),
+        category: item.category || '',
+        product: item.product || tx.product || '',
+        gauge: item.gauge || '',
+        meters: item.meters || '',
+        remarks: item.remarks || ''
+      };
+    })
+    .filter((row) => {
+      const text = `${row.issuedFor} ${row.itemId} ${row.category} ${row.product} ${row.gauge} ${row.meters} ${row.remarks} ${row.user || ''}`.toLowerCase();
+      return !query || text.includes(query);
+    })
+    .sort((a, b) => a.issuedFor.localeCompare(b.issuedFor) || new Date(a.timestamp) - new Date(b.timestamp));
 }
 
 function reportCategoryTotalRow(category, total) {
@@ -1188,6 +1262,24 @@ function exportTransactionsCsv() {
   const headers = ['Timestamp', 'QR ID', 'Product', 'Action', 'Rolls', 'Weight/Roll', 'Total Weight', 'Balance After', 'Issued For', 'User'];
   const rows = state.transactions.map((tx) => [tx.timestamp, tx.itemId, tx.product, tx.action, tx.rolls, tx.weightPerRoll, tx.totalWeight, tx.balanceAfter, tx.issuedFor || '', tx.user || '']);
   downloadText('transactions.csv', [headers, ...rows].map((row) => row.map(csvCell).join(',')).join('\n'), 'text/csv');
+}
+
+function exportJobOrderUsageCsv() {
+  const headers = ['JO / Issued For', 'Timestamp', 'QR ID', 'Category', 'Product', 'Gauge', 'Meters/Roll', 'Remarks', 'Rolls', 'Total Weight', 'Scanned By'];
+  const rows = buildJobOrderUsageRows().map((row) => [
+    row.issuedFor,
+    row.timestamp,
+    row.itemId,
+    row.category,
+    row.product,
+    row.gauge,
+    row.meters,
+    row.remarks,
+    row.rolls,
+    row.totalWeight,
+    row.user || ''
+  ]);
+  downloadText('jo-usage-report.csv', [headers, ...rows].map((row) => row.map(csvCell).join(',')).join('\n'), 'text/csv');
 }
 
 function downloadBackup() {
