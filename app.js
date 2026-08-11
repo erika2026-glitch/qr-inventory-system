@@ -4,6 +4,7 @@ const SUPABASE = window.SUPABASE_CONFIG || null;
 
 const state = loadState();
 const el = (id) => document.getElementById(id);
+const jobOrders = () => window.JOB_ORDERS || [];
 
 const viewMeta = {
   dashboard: ['Dashboard', 'Live stock summary and recent movement'],
@@ -218,6 +219,7 @@ function showView(view) {
 
 function renderAll() {
   renderCategories();
+  renderJobOrderOptions();
   renderDashboard();
   renderInventory();
   renderTransactions();
@@ -239,6 +241,15 @@ function renderCategories() {
     reportSelect.innerHTML = '<option value="">All categories</option>' + categories.map((category) => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('');
     reportSelect.value = reportCurrent;
   }
+}
+
+function renderJobOrderOptions() {
+  const list = el('jobOrderOptions');
+  if (!list) return;
+  list.innerHTML = jobOrders().map((job) => {
+    const label = [job.joNo, job.customer, job.particulars, job.size].filter(Boolean).join(' - ');
+    return `<option value="${escapeHtml(job.joNo)}" label="${escapeHtml(label)}"></option>`;
+  }).join('');
 }
 
 function renderDashboard() {
@@ -509,15 +520,24 @@ function renderJobOrderUsageReport() {
   let grandRolls = 0;
   let grandWeight = 0;
 
-  for (const [issuedFor, txRows] of groupBy(rows, (row) => row.issuedFor).entries()) {
+  for (const [issuedFor, txRows] of groupBy(rows, (row) => row.jobNo || row.issuedFor).entries()) {
     const totalRolls = txRows.reduce((sum, row) => sum + Number(row.rolls || 0), 0);
     const totalWeight = txRows.reduce((sum, row) => sum + Number(row.totalWeight || 0), 0);
+    const firstRow = txRows[0] || {};
+    const groupLabel = [
+      issuedFor,
+      firstRow.customer,
+      firstRow.jobParticulars
+    ].filter(Boolean).join(' - ');
     grandRolls += totalRolls;
     grandWeight += totalWeight;
-    html.push(`<tr class="category-row"><td colspan="11">${escapeHtml(issuedFor)} - ${formatNumber(totalRolls, 0)} roll(s) / ${formatNumber(totalWeight, 2)} kg</td></tr>`);
+    html.push(`<tr class="category-row"><td colspan="14">${escapeHtml(groupLabel)} - ${formatNumber(totalRolls, 0)} roll(s) / ${formatNumber(totalWeight, 2)} kg</td></tr>`);
     txRows.forEach((row) => {
       html.push(`<tr>
-        <td>${escapeHtml(row.issuedFor)}</td>
+        <td>${escapeHtml(row.jobNo || row.issuedFor)}</td>
+        <td>${escapeHtml(row.customer)}</td>
+        <td>${escapeHtml(row.jobParticulars)}</td>
+        <td>${escapeHtml(row.jobSize)}</td>
         <td>${formatDate(row.timestamp)}</td>
         <td>${escapeHtml(row.itemId)}</td>
         <td>${escapeHtml(row.category)}</td>
@@ -533,10 +553,10 @@ function renderJobOrderUsageReport() {
   }
 
   if (html.length) {
-    html.push(`<tr class="total-row"><td colspan="8">GRAND TOTAL</td><td>${formatNumber(grandRolls, 0)}</td><td>${formatNumber(grandWeight, 2)}</td><td></td></tr>`);
+    html.push(`<tr class="total-row"><td colspan="11">GRAND TOTAL</td><td>${formatNumber(grandRolls, 0)}</td><td>${formatNumber(grandWeight, 2)}</td><td></td></tr>`);
   }
 
-  el('joUsageRows').innerHTML = html.join('') || `<tr><td colspan="11">No issued rolls with JO / Issued For for this period.</td></tr>`;
+  el('joUsageRows').innerHTML = html.join('') || `<tr><td colspan="14">No issued rolls with JO / Issued For for this period.</td></tr>`;
 }
 
 function buildJobOrderUsageRows() {
@@ -556,9 +576,15 @@ function buildJobOrderUsageRows() {
     })
     .map((tx) => {
       const item = state.items.find((row) => row.id === tx.itemId) || {};
+      const issuedFor = String(tx.issuedFor || '').trim();
+      const job = findJobOrder(issuedFor);
       return {
         ...tx,
-        issuedFor: String(tx.issuedFor || '').trim(),
+        issuedFor,
+        jobNo: job?.joNo || extractJobOrderNo(issuedFor),
+        customer: job?.customer || '',
+        jobParticulars: job?.particulars || '',
+        jobSize: job?.size || '',
         category: item.category || '',
         product: item.product || tx.product || '',
         gauge: item.gauge || '',
@@ -567,10 +593,22 @@ function buildJobOrderUsageRows() {
       };
     })
     .filter((row) => {
-      const text = `${row.issuedFor} ${row.itemId} ${row.category} ${row.product} ${row.gauge} ${row.meters} ${row.remarks} ${row.user || ''}`.toLowerCase();
+      const text = `${row.issuedFor} ${row.jobNo} ${row.customer} ${row.jobParticulars} ${row.jobSize} ${row.itemId} ${row.category} ${row.product} ${row.gauge} ${row.meters} ${row.remarks} ${row.user || ''}`.toLowerCase();
       return !query || text.includes(query);
     })
-    .sort((a, b) => a.issuedFor.localeCompare(b.issuedFor) || new Date(a.timestamp) - new Date(b.timestamp));
+    .sort((a, b) => (a.jobNo || a.issuedFor).localeCompare(b.jobNo || b.issuedFor) || new Date(a.timestamp) - new Date(b.timestamp));
+}
+
+function extractJobOrderNo(value) {
+  const text = String(value || '').trim();
+  const match = text.match(/\b\d{3}-[A-Z]-\d{3}\b/i);
+  return match ? match[0].toUpperCase() : text.toUpperCase();
+}
+
+function findJobOrder(value) {
+  const key = extractJobOrderNo(value);
+  if (!key) return null;
+  return jobOrders().find((job) => String(job.joNo || '').toUpperCase() === key) || null;
 }
 
 function reportCategoryTotalRow(category, total) {
@@ -813,7 +851,7 @@ function renderScanResult() {
     <div class="action-form">
       <label>Rolls<input id="actionRolls" type="number" min="1" step="1" value="1"></label>
       <label>Scanned By<input id="actionUser" placeholder="Name or initials" value="${escapeHtml(getStaffName())}"></label>
-      <label class="wide">Issued For / Job Order<input id="issuedForInput" placeholder="Example: Printing - JO 026-E-065"></label>
+      <label class="wide">Issued For / Job Order<input id="issuedForInput" list="jobOrderOptions" placeholder="Example: 026-A-010"></label>
       <button class="primary" id="postInBtn">Delivery</button>
       <button class="danger" id="postOutBtn">Issuance</button>
     </div>
@@ -839,7 +877,7 @@ function postTransaction(action) {
     return;
   }
   if (action === 'OUT' && !issuedFor) {
-    issuedFor = prompt('Issued for / Job Order?', 'Printing - JO 026-E-065')?.trim() || '';
+    issuedFor = prompt('Issued for / Job Order?', jobOrders()[0]?.joNo || '026-A-010')?.trim() || '';
     if (issuedFor) {
       document.getElementById('issuedForInput').value = issuedFor;
     } else {
@@ -1265,9 +1303,12 @@ function exportTransactionsCsv() {
 }
 
 function exportJobOrderUsageCsv() {
-  const headers = ['JO / Issued For', 'Timestamp', 'QR ID', 'Category', 'Product', 'Gauge', 'Meters/Roll', 'Remarks', 'Rolls', 'Total Weight', 'Scanned By'];
+  const headers = ['JO / Issued For', 'Customer', 'Job Particulars', 'Job Size', 'Timestamp', 'QR ID', 'Category', 'Product', 'Gauge', 'Meters/Roll', 'Remarks', 'Rolls', 'Total Weight', 'Scanned By'];
   const rows = buildJobOrderUsageRows().map((row) => [
-    row.issuedFor,
+    row.jobNo || row.issuedFor,
+    row.customer,
+    row.jobParticulars,
+    row.jobSize,
     row.timestamp,
     row.itemId,
     row.category,

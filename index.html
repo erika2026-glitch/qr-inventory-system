@@ -228,7 +228,7 @@
           <div class="table-wrap">
             <table>
               <thead>
-                <tr><th>JO / Issued For</th><th>Date</th><th>QR ID</th><th>Category</th><th>Product</th><th>Gauge</th><th>M/Roll</th><th>Remarks</th><th>Rolls</th><th>Total Weight</th><th>Scanned By</th></tr>
+                <tr><th>JO / Issued For</th><th>Customer</th><th>Job Particulars</th><th>Job Size</th><th>Date Used</th><th>QR ID</th><th>Category</th><th>Product</th><th>Gauge</th><th>M/Roll</th><th>Remarks</th><th>Rolls</th><th>Total Weight</th><th>Scanned By</th></tr>
               </thead>
               <tbody id="joUsageRows"></tbody>
             </table>
@@ -321,7 +321,10 @@
       </form>
     </dialog>
 
+    <datalist id="jobOrderOptions"></datalist>
+
     <script src="data.js"></script>
+    <script src="job_orders.js"></script>
     <script src="config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
