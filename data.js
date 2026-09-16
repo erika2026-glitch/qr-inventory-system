@@ -9,6 +9,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 71.8,
     "currentRolls": 2.0,
     "currentWeight": 143.6,
+    "beginningRolls": 2.0,
+    "beginningWeight": 143.6,
     "minRolls": 1
   },
   {
@@ -21,22 +23,40 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 71.375,
     "currentRolls": 12.0,
     "currentWeight": 856.5,
+    "beginningRolls": 12.0,
+    "beginningWeight": 856.5,
     "minRolls": 1
   },
   {
     "id": "QR-00003",
+    "category": "BOPP PLAIN",
+    "product": "680mm (08/28/26)",
+    "gauge": "20",
+    "meters": "6000",
+    "remarks": "MEGA",
+    "weightPerRoll": 75.82,
+    "currentRolls": 5.0,
+    "currentWeight": 379.1,
+    "beginningRolls": 5.0,
+    "beginningWeight": 379.1,
+    "minRolls": 1
+  },
+  {
+    "id": "QR-00004",
     "category": "BOPP PLAIN",
     "product": "695mm (02/12/26)",
     "gauge": "20",
     "meters": "6000",
     "remarks": "WEIFU",
     "weightPerRoll": 75.37,
-    "currentRolls": 10.0,
-    "currentWeight": 753.7,
+    "currentRolls": 3.0,
+    "currentWeight": 225.6,
+    "beginningRolls": 3.0,
+    "beginningWeight": 225.6,
     "minRolls": 1
   },
   {
-    "id": "QR-00004",
+    "id": "QR-00005",
     "category": "BOPP PLAIN",
     "product": "695mm (05/13/26)",
     "gauge": "20",
@@ -45,10 +65,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 74.3438,
     "currentRolls": 16.0,
     "currentWeight": 1189.5,
+    "beginningRolls": 16.0,
+    "beginningWeight": 1189.5,
     "minRolls": 1
   },
   {
-    "id": "QR-00005",
+    "id": "QR-00006",
     "category": "BOPP PLAIN",
     "product": "755mm (03/24/23)",
     "gauge": "20",
@@ -57,10 +79,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 80.9933,
     "currentRolls": 15.0,
     "currentWeight": 1214.9,
+    "beginningRolls": 15.0,
+    "beginningWeight": 1214.9,
     "minRolls": 1
   },
   {
-    "id": "QR-00006",
+    "id": "QR-00007",
     "category": "BOPP PLAIN",
     "product": "765mm (11/19/22)",
     "gauge": "20",
@@ -69,10 +93,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 81.3667,
     "currentRolls": 3.0,
     "currentWeight": 244.1,
+    "beginningRolls": 3.0,
+    "beginningWeight": 244.1,
     "minRolls": 1
   },
   {
-    "id": "QR-00007",
+    "id": "QR-00008",
     "category": "BOPP PLAIN",
     "product": "765mm (07/04/23)",
     "gauge": "20",
@@ -81,10 +107,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 80.8833,
     "currentRolls": 6.0,
     "currentWeight": 485.3,
+    "beginningRolls": 6.0,
+    "beginningWeight": 485.3,
     "minRolls": 1
   },
   {
-    "id": "QR-00008",
+    "id": "QR-00009",
     "category": "BOPP PLAIN",
     "product": "775mm (04/30/20)",
     "gauge": "20",
@@ -93,18 +121,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 84.6,
     "currentRolls": 8.0,
     "currentWeight": 676.8,
-    "minRolls": 1
-  },
-  {
-    "id": "QR-00009",
-    "category": "BOPP PLAIN",
-    "product": "845mm (07/04/23)",
-    "gauge": "20",
-    "meters": "6000",
-    "remarks": "WEIFU",
-    "weightPerRoll": 89.1,
-    "currentRolls": 12.0,
-    "currentWeight": 1069.2,
+    "beginningRolls": 8.0,
+    "beginningWeight": 676.8,
     "minRolls": 1
   },
   {
@@ -112,11 +130,13 @@ window.STARTER_ITEMS = [
     "category": "BOPP PLAIN",
     "product": "845mm (07/04/23)",
     "gauge": "20",
-    "meters": "Leftover",
+    "meters": "6000",
     "remarks": "WEIFU",
-    "weightPerRoll": 0,
-    "currentRolls": 0.0,
-    "currentWeight": 42.4,
+    "weightPerRoll": 89.08,
+    "currentRolls": 10.0,
+    "currentWeight": 890.8,
+    "beginningRolls": 10.0,
+    "beginningWeight": 890.8,
     "minRolls": 1
   },
   {
@@ -129,6 +149,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 42.75,
+    "beginningRolls": 0.0,
+    "beginningWeight": 42.75,
     "minRolls": 1
   },
   {
@@ -141,6 +163,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 93.3214,
     "currentRolls": 14.0,
     "currentWeight": 1306.5,
+    "beginningRolls": 14.0,
+    "beginningWeight": 1306.5,
     "minRolls": 1
   },
   {
@@ -150,9 +174,11 @@ window.STARTER_ITEMS = [
     "gauge": "20",
     "meters": "6000",
     "remarks": "WEIFU",
-    "weightPerRoll": 92.41,
-    "currentRolls": 10.0,
-    "currentWeight": 924.1,
+    "weightPerRoll": 92.175,
+    "currentRolls": 8.0,
+    "currentWeight": 737.4,
+    "beginningRolls": 8.0,
+    "beginningWeight": 737.4,
     "minRolls": 1
   },
   {
@@ -165,30 +191,36 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 90.85,
     "currentRolls": 8.0,
     "currentWeight": 726.8,
+    "beginningRolls": 8.0,
+    "beginningWeight": 726.8,
     "minRolls": 1
   },
   {
     "id": "QR-00015",
     "category": "BOPP PLAIN",
-    "product": "865mm (05/12/26)",
+    "product": "865mm (08/06/26)",
     "gauge": "20",
     "meters": "6000",
     "remarks": "WEIFU",
-    "weightPerRoll": 92.49,
-    "currentRolls": 10.0,
-    "currentWeight": 924.9,
+    "weightPerRoll": 91.975,
+    "currentRolls": 44.0,
+    "currentWeight": 4046.9,
+    "beginningRolls": 44.0,
+    "beginningWeight": 4046.9,
     "minRolls": 1
   },
   {
     "id": "QR-00016",
     "category": "BOPP PLAIN",
-    "product": "865mm (06/25/26)",
+    "product": "865mm (08/08/26)",
     "gauge": "20",
     "meters": "6000",
     "remarks": "WEIFU",
-    "weightPerRoll": 91.1582,
-    "currentRolls": 110.0,
-    "currentWeight": 10027.4,
+    "weightPerRoll": 92.5225,
+    "currentRolls": 40.0,
+    "currentWeight": 3700.9,
+    "beginningRolls": 40.0,
+    "beginningWeight": 3700.9,
     "minRolls": 1
   },
   {
@@ -201,6 +233,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 93.2,
     "currentRolls": 10.0,
     "currentWeight": 932.0,
+    "beginningRolls": 10.0,
+    "beginningWeight": 932.0,
     "minRolls": 1
   },
   {
@@ -213,6 +247,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 96.1,
     "currentRolls": 1.0,
     "currentWeight": 96.1,
+    "beginningRolls": 1.0,
+    "beginningWeight": 96.1,
     "minRolls": 1
   },
   {
@@ -225,6 +261,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 95.6333,
     "currentRolls": 3.0,
     "currentWeight": 286.9,
+    "beginningRolls": 3.0,
+    "beginningWeight": 286.9,
     "minRolls": 1
   },
   {
@@ -237,6 +275,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 95.7667,
     "currentRolls": 9.0,
     "currentWeight": 861.9,
+    "beginningRolls": 9.0,
+    "beginningWeight": 861.9,
     "minRolls": 1
   },
   {
@@ -249,6 +289,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 96.3286,
     "currentRolls": 7.0,
     "currentWeight": 674.3,
+    "beginningRolls": 7.0,
+    "beginningWeight": 674.3,
     "minRolls": 1
   },
   {
@@ -261,18 +303,22 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 97.465,
     "currentRolls": 40.0,
     "currentWeight": 3898.6,
+    "beginningRolls": 40.0,
+    "beginningWeight": 3898.6,
     "minRolls": 1
   },
   {
     "id": "QR-00023",
     "category": "BOPP PLAIN",
-    "product": "915mm (05/13/26)",
+    "product": "915mm (08/08/26)",
     "gauge": "20",
     "meters": "6000",
     "remarks": "WEIFU",
-    "weightPerRoll": 0,
-    "currentRolls": 0.0,
-    "currentWeight": 0.0,
+    "weightPerRoll": 98.1167,
+    "currentRolls": 7.0,
+    "currentWeight": 687.3,
+    "beginningRolls": 7.0,
+    "beginningWeight": 687.3,
     "minRolls": 1
   },
   {
@@ -282,9 +328,11 @@ window.STARTER_ITEMS = [
     "gauge": "20",
     "meters": "6000",
     "remarks": "WEIFU",
-    "weightPerRoll": 106.1818,
-    "currentRolls": 22.0,
-    "currentWeight": 2336.0,
+    "weightPerRoll": 106.1857,
+    "currentRolls": 21.0,
+    "currentWeight": 2229.9,
+    "beginningRolls": 21.0,
+    "beginningWeight": 2229.9,
     "minRolls": 1
   },
   {
@@ -297,6 +345,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 51.5,
+    "beginningRolls": 0.0,
+    "beginningWeight": 51.5,
     "minRolls": 1
   },
   {
@@ -309,6 +359,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 107.9333,
     "currentRolls": 9.0,
     "currentWeight": 971.4,
+    "beginningRolls": 9.0,
+    "beginningWeight": 971.4,
     "minRolls": 1
   },
   {
@@ -321,6 +373,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 112.9,
     "currentRolls": 5.0,
     "currentWeight": 564.5,
+    "beginningRolls": 5.0,
+    "beginningWeight": 564.5,
     "minRolls": 1
   },
   {
@@ -333,6 +387,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 113.7,
     "currentRolls": 5.0,
     "currentWeight": 568.5,
+    "beginningRolls": 5.0,
+    "beginningWeight": 568.5,
     "minRolls": 1
   },
   {
@@ -343,8 +399,10 @@ window.STARTER_ITEMS = [
     "meters": "6000",
     "remarks": "WEIFU",
     "weightPerRoll": 95.2619,
-    "currentRolls": 21.0,
-    "currentWeight": 2000.5,
+    "currentRolls": 19.0,
+    "currentWeight": 1809.7,
+    "beginningRolls": 19.0,
+    "beginningWeight": 1809.7,
     "minRolls": 1
   },
   {
@@ -356,47 +414,69 @@ window.STARTER_ITEMS = [
     "remarks": "WEIFU",
     "weightPerRoll": 0,
     "currentRolls": 0.0,
-    "currentWeight": 46.15,
+    "currentWeight": 47.05,
+    "beginningRolls": 0.0,
+    "beginningWeight": 47.05,
     "minRolls": 1
   },
   {
     "id": "QR-00031",
+    "category": "BOPP PLAIN",
+    "product": "700mm (08/08/26)",
+    "gauge": "25",
+    "meters": "6000",
+    "remarks": "WEIFU",
+    "weightPerRoll": 92.868,
+    "currentRolls": 50.0,
+    "currentWeight": 4643.4,
+    "beginningRolls": 50.0,
+    "beginningWeight": 4643.4,
+    "minRolls": 1
+  },
+  {
+    "id": "QR-00032",
     "category": "BOPP PLAIN",
     "product": "775mm (09/01/25)",
     "gauge": "25",
     "meters": "6000",
     "remarks": "WEIFU",
     "weightPerRoll": 105.325,
-    "currentRolls": 4.0,
-    "currentWeight": 421.3,
-    "minRolls": 1
-  },
-  {
-    "id": "QR-00032",
-    "category": "BOPP PLAIN",
-    "product": "815mm (10/16/25)",
-    "gauge": "25",
-    "meters": "6000",
-    "remarks": "WEIFU",
-    "weightPerRoll": 110.65,
-    "currentRolls": 2.0,
-    "currentWeight": 221.3,
+    "currentRolls": 0.0,
+    "currentWeight": 0.0,
+    "beginningRolls": 0.0,
+    "beginningWeight": 0.0,
     "minRolls": 1
   },
   {
     "id": "QR-00033",
     "category": "BOPP PLAIN",
-    "product": "815mm (02/12/26)",
+    "product": "775mm (08/08/26)",
     "gauge": "25",
     "meters": "6000",
     "remarks": "WEIFU",
-    "weightPerRoll": 111.21,
-    "currentRolls": 10.0,
-    "currentWeight": 1112.1,
+    "weightPerRoll": 102.6333,
+    "currentRolls": 6.0,
+    "currentWeight": 615.8,
+    "beginningRolls": 6.0,
+    "beginningWeight": 615.8,
     "minRolls": 1
   },
   {
     "id": "QR-00034",
+    "category": "BOPP PLAIN",
+    "product": "815mm (02/12/26)",
+    "gauge": "25",
+    "meters": "6000",
+    "remarks": "WEIFU",
+    "weightPerRoll": 111.2857,
+    "currentRolls": 7.0,
+    "currentWeight": 779.0,
+    "beginningRolls": 7.0,
+    "beginningWeight": 779.0,
+    "minRolls": 1
+  },
+  {
+    "id": "QR-00035",
     "category": "BOPP PLAIN",
     "product": "915mm (04/23/25)",
     "gauge": "25",
@@ -405,10 +485,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 123.9923,
     "currentRolls": 13.0,
     "currentWeight": 1611.9,
+    "beginningRolls": 13.0,
+    "beginningWeight": 1611.9,
     "minRolls": 1
   },
   {
-    "id": "QR-00035",
+    "id": "QR-00036",
     "category": "BOPP PLAIN",
     "product": "915mm (04/23/25)",
     "gauge": "25",
@@ -417,22 +499,40 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 60.8,
-    "minRolls": 1
-  },
-  {
-    "id": "QR-00036",
-    "category": "BOPP PLAIN",
-    "product": "965mm (12/01/25)",
-    "gauge": "25",
-    "meters": "6000",
-    "remarks": "WEIFU",
-    "weightPerRoll": 0,
-    "currentRolls": 0.0,
-    "currentWeight": 0.0,
+    "beginningRolls": 0.0,
+    "beginningWeight": 60.8,
     "minRolls": 1
   },
   {
     "id": "QR-00037",
+    "category": "BOPP PLAIN",
+    "product": "965mm (08/08/26)",
+    "gauge": "25",
+    "meters": "6000",
+    "remarks": "WEIFU",
+    "weightPerRoll": 128.1,
+    "currentRolls": 8.0,
+    "currentWeight": 1024.4,
+    "beginningRolls": 8.0,
+    "beginningWeight": 1024.4,
+    "minRolls": 1
+  },
+  {
+    "id": "QR-00038",
+    "category": "BOPP PLAIN",
+    "product": "965mm (08/08/26)",
+    "gauge": "25",
+    "meters": "Leftover",
+    "remarks": "WEIFU",
+    "weightPerRoll": 0,
+    "currentRolls": 0.0,
+    "currentWeight": 0.0,
+    "beginningRolls": 0.0,
+    "beginningWeight": 0.0,
+    "minRolls": 1
+  },
+  {
+    "id": "QR-00039",
     "category": "BOPP PLAIN",
     "product": "1015mm(3/14/15)",
     "gauge": "25",
@@ -441,10 +541,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 138.1,
     "currentRolls": 1.0,
     "currentWeight": 138.1,
+    "beginningRolls": 1.0,
+    "beginningWeight": 138.1,
     "minRolls": 1
   },
   {
-    "id": "QR-00038",
+    "id": "QR-00040",
     "category": "BOPP PLAIN",
     "product": "1050mm (10/16/25)",
     "gauge": "25",
@@ -453,10 +555,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 29.55,
+    "beginningRolls": 0.0,
+    "beginningWeight": 29.55,
     "minRolls": 1
   },
   {
-    "id": "QR-00039",
+    "id": "QR-00041",
     "category": "BOPP PLAIN",
     "product": "1050mm (02/12/26)",
     "gauge": "25",
@@ -465,42 +569,22 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 143.5429,
     "currentRolls": 7.0,
     "currentWeight": 1004.8,
-    "minRolls": 1
-  },
-  {
-    "id": "QR-00040",
-    "category": "BOPP PLAIN",
-    "product": "625mm (02/12/26)",
-    "gauge": "30",
-    "meters": "6000",
-    "remarks": "WEIFU",
-    "weightPerRoll": 101.35,
-    "currentRolls": 2.0,
-    "currentWeight": 202.7,
-    "minRolls": 1
-  },
-  {
-    "id": "QR-00041",
-    "category": "BOPP PLAIN",
-    "product": "625mm (02/12/26)",
-    "gauge": "30",
-    "meters": "Leftover",
-    "remarks": "WEIFU",
-    "weightPerRoll": 0,
-    "currentRolls": 0.0,
-    "currentWeight": 69.9,
+    "beginningRolls": 7.0,
+    "beginningWeight": 1004.8,
     "minRolls": 1
   },
   {
     "id": "QR-00042",
     "category": "BOPP PLAIN",
-    "product": "625mm (06/25/26)",
+    "product": "625mm (08/08/26)",
     "gauge": "30",
     "meters": "6000",
     "remarks": "WEIFU",
-    "weightPerRoll": 101.7444,
-    "currentRolls": 9.0,
-    "currentWeight": 915.7,
+    "weightPerRoll": 101.2,
+    "currentRolls": 1.0,
+    "currentWeight": 101.2,
+    "beginningRolls": 1.0,
+    "beginningWeight": 101.2,
     "minRolls": 1
   },
   {
@@ -513,6 +597,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 96.2,
+    "beginningRolls": 0.0,
+    "beginningWeight": 96.2,
     "minRolls": 1
   },
   {
@@ -525,10 +611,26 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 117.875,
     "currentRolls": 4.0,
     "currentWeight": 471.5,
+    "beginningRolls": 4.0,
+    "beginningWeight": 471.5,
     "minRolls": 1
   },
   {
     "id": "QR-00045",
+    "category": "BOPP PLAIN",
+    "product": "725mm (08/08/26)",
+    "gauge": "30",
+    "meters": "6000",
+    "remarks": "WEIFU",
+    "weightPerRoll": 118.12,
+    "currentRolls": 20.0,
+    "currentWeight": 2362.4,
+    "beginningRolls": 20.0,
+    "beginningWeight": 2362.4,
+    "minRolls": 1
+  },
+  {
+    "id": "QR-00046",
     "category": "BOPP PLAIN",
     "product": "905mm (09/01/25)",
     "gauge": "30",
@@ -537,10 +639,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 147.9,
     "currentRolls": 1.0,
     "currentWeight": 147.9,
+    "beginningRolls": 1.0,
+    "beginningWeight": 147.9,
     "minRolls": 1
   },
   {
-    "id": "QR-00046",
+    "id": "QR-00047",
     "category": "BOPP PLAIN",
     "product": "930mm (06/19/25)",
     "gauge": "30",
@@ -549,10 +653,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 101.0,
     "currentRolls": 3.0,
     "currentWeight": 303.0,
+    "beginningRolls": 3.0,
+    "beginningWeight": 303.0,
     "minRolls": 1
   },
   {
-    "id": "QR-00047",
+    "id": "QR-00048",
     "category": "BOPP PLAIN",
     "product": "945mm (11/24/14)",
     "gauge": "30",
@@ -561,10 +667,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 148.95,
+    "beginningRolls": 0.0,
+    "beginningWeight": 148.95,
     "minRolls": 1
   },
   {
-    "id": "QR-00048",
+    "id": "QR-00049",
     "category": "BOPP PLAIN",
     "product": "945mm(01/28/16)",
     "gauge": "30",
@@ -573,18 +681,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 154.3,
     "currentRolls": 1.0,
     "currentWeight": 154.3,
-    "minRolls": 1
-  },
-  {
-    "id": "QR-00049",
-    "category": "BOPP PLAIN",
-    "product": "945mm(01/28/16)",
-    "gauge": "30",
-    "meters": "Leftover",
-    "remarks": "helen-R",
-    "weightPerRoll": 0,
-    "currentRolls": 0.0,
-    "currentWeight": 16.35,
+    "beginningRolls": 1.0,
+    "beginningWeight": 154.3,
     "minRolls": 1
   },
   {
@@ -594,13 +692,29 @@ window.STARTER_ITEMS = [
     "gauge": "30",
     "meters": "Leftover",
     "remarks": "helen-R",
-    "weightPerRoll": 154.3,
-    "currentRolls": 1.0,
-    "currentWeight": 154.3,
+    "weightPerRoll": 0,
+    "currentRolls": 0.0,
+    "currentWeight": 16.35,
+    "beginningRolls": 0.0,
+    "beginningWeight": 16.35,
     "minRolls": 1
   },
   {
     "id": "QR-00051",
+    "category": "BOPP PLAIN",
+    "product": "945mm(01/28/16)",
+    "gauge": "30",
+    "meters": "Leftover",
+    "remarks": "helen-R",
+    "weightPerRoll": 154.3,
+    "currentRolls": 1.0,
+    "currentWeight": 154.3,
+    "beginningRolls": 1.0,
+    "beginningWeight": 154.3,
+    "minRolls": 1
+  },
+  {
+    "id": "QR-00052",
     "category": "BOPP PLAIN",
     "product": "965mm (07/12/25)",
     "gauge": "30",
@@ -609,10 +723,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 157.5,
     "currentRolls": 20.0,
     "currentWeight": 3150.0,
+    "beginningRolls": 20.0,
+    "beginningWeight": 3150.0,
     "minRolls": 1
   },
   {
-    "id": "QR-00052",
+    "id": "QR-00053",
     "category": "MATT",
     "product": "715mm (02/06/25)",
     "gauge": "20",
@@ -621,18 +737,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 77.55,
     "currentRolls": 2.0,
     "currentWeight": 155.1,
-    "minRolls": 1
-  },
-  {
-    "id": "QR-00053",
-    "category": "MATT",
-    "product": "715mm (11/15/21)",
-    "gauge": "19",
-    "meters": "Leftover",
-    "remarks": "DEFU",
-    "weightPerRoll": 0,
-    "currentRolls": 0.0,
-    "currentWeight": 53.7,
+    "beginningRolls": 2.0,
+    "beginningWeight": 155.1,
     "minRolls": 1
   },
   {
@@ -642,9 +748,11 @@ window.STARTER_ITEMS = [
     "gauge": "19",
     "meters": "Leftover",
     "remarks": "DEFU",
-    "weightPerRoll": 68.0,
-    "currentRolls": 1.0,
-    "currentWeight": 68.0,
+    "weightPerRoll": 0,
+    "currentRolls": 0.0,
+    "currentWeight": 53.7,
+    "beginningRolls": 0.0,
+    "beginningWeight": 53.7,
     "minRolls": 1
   },
   {
@@ -654,9 +762,11 @@ window.STARTER_ITEMS = [
     "gauge": "19",
     "meters": "Leftover",
     "remarks": "DEFU",
-    "weightPerRoll": 0,
-    "currentRolls": 0.0,
-    "currentWeight": 62.0,
+    "weightPerRoll": 68.0,
+    "currentRolls": 1.0,
+    "currentWeight": 68.0,
+    "beginningRolls": 1.0,
+    "beginningWeight": 68.0,
     "minRolls": 1
   },
   {
@@ -668,35 +778,55 @@ window.STARTER_ITEMS = [
     "remarks": "DEFU",
     "weightPerRoll": 0,
     "currentRolls": 0.0,
-    "currentWeight": 68.15,
+    "currentWeight": 62.0,
+    "beginningRolls": 0.0,
+    "beginningWeight": 62.0,
     "minRolls": 1
   },
   {
     "id": "QR-00057",
     "category": "MATT",
-    "product": "715mm (05/13/26)",
-    "gauge": "20",
+    "product": "715mm (11/15/21)",
+    "gauge": "19",
     "meters": "Leftover",
-    "remarks": "WEIFU",
+    "remarks": "DEFU",
     "weightPerRoll": 0,
     "currentRolls": 0.0,
-    "currentWeight": 26.75,
+    "currentWeight": 68.15,
+    "beginningRolls": 0.0,
+    "beginningWeight": 68.15,
     "minRolls": 1
   },
   {
     "id": "QR-00058",
     "category": "MATT",
-    "product": "715mm (05/13/26)",
+    "product": "715mm (08/08/26)",
+    "gauge": "20",
+    "meters": "6000",
+    "remarks": "WEIFU",
+    "weightPerRoll": 72.3878,
+    "currentRolls": 33.0,
+    "currentWeight": 2392.9,
+    "beginningRolls": 33.0,
+    "beginningWeight": 2392.9,
+    "minRolls": 1
+  },
+  {
+    "id": "QR-00059",
+    "category": "MATT",
+    "product": "715mm (08/08/26)",
     "gauge": "20",
     "meters": "Leftover",
     "remarks": "WEIFU",
     "weightPerRoll": 0,
     "currentRolls": 0.0,
-    "currentWeight": 6.0,
+    "currentWeight": 35.6,
+    "beginningRolls": 0.0,
+    "beginningWeight": 35.6,
     "minRolls": 1
   },
   {
-    "id": "QR-00059",
+    "id": "QR-00060",
     "category": "MATT",
     "product": "775mm (03/14/25)",
     "gauge": "20",
@@ -705,34 +835,40 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 27.2,
     "currentRolls": 1.0,
     "currentWeight": 27.2,
-    "minRolls": 1
-  },
-  {
-    "id": "QR-00060",
-    "category": "COEX",
-    "product": "865mm (05/12/26)",
-    "gauge": "18",
-    "meters": "6000",
-    "remarks": "WEIFU",
-    "weightPerRoll": 85.1111,
-    "currentRolls": 9.0,
-    "currentWeight": 766.0,
+    "beginningRolls": 1.0,
+    "beginningWeight": 27.2,
     "minRolls": 1
   },
   {
     "id": "QR-00061",
     "category": "COEX",
-    "product": "865mm (06/25/26)",
+    "product": "865mm (08/06/26)",
     "gauge": "18",
     "meters": "6000",
     "remarks": "WEIFU",
-    "weightPerRoll": 83.6209,
-    "currentRolls": 110.0,
-    "currentWeight": 9198.3,
+    "weightPerRoll": 84.2534,
+    "currentRolls": 46.0,
+    "currentWeight": 3876.2,
+    "beginningRolls": 46.0,
+    "beginningWeight": 3876.2,
     "minRolls": 1
   },
   {
     "id": "QR-00062",
+    "category": "COEX",
+    "product": "865mm (08/08/26)",
+    "gauge": "18",
+    "meters": "6000",
+    "remarks": "WEIFU",
+    "weightPerRoll": 83.6275,
+    "currentRolls": 40.0,
+    "currentWeight": 3345.1,
+    "beginningRolls": 40.0,
+    "beginningWeight": 3345.1,
+    "minRolls": 1
+  },
+  {
+    "id": "QR-00063",
     "category": "COEX",
     "product": "700mm (12/24/20)",
     "gauge": "18",
@@ -741,30 +877,22 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 17.1,
     "currentRolls": 1.0,
     "currentWeight": 17.1,
+    "beginningRolls": 1.0,
+    "beginningWeight": 17.1,
     "minRolls": 1
   },
   {
-    "id": "QR-00063",
+    "id": "QR-00064",
     "category": "COEX",
     "product": "825mm (02/12/26)",
     "gauge": "30",
     "meters": "6000",
     "remarks": "WEIFU",
     "weightPerRoll": 134.9,
-    "currentRolls": 9.0,
-    "currentWeight": 1214.1,
-    "minRolls": 1
-  },
-  {
-    "id": "QR-00064",
-    "category": "COEX",
-    "product": "1055mm (09/15/25)",
-    "gauge": "30",
-    "meters": "6000",
-    "remarks": "WEIFU",
-    "weightPerRoll": 172.7778,
-    "currentRolls": 9.0,
-    "currentWeight": 1555.0,
+    "currentRolls": 7.0,
+    "currentWeight": 945.0,
+    "beginningRolls": 7.0,
+    "beginningWeight": 945.0,
     "minRolls": 1
   },
   {
@@ -772,11 +900,13 @@ window.STARTER_ITEMS = [
     "category": "COEX",
     "product": "1055mm (09/15/25)",
     "gauge": "30",
-    "meters": "Leftover",
+    "meters": "6000",
     "remarks": "WEIFU",
-    "weightPerRoll": 0,
-    "currentRolls": 0.0,
-    "currentWeight": 23.55,
+    "weightPerRoll": 172.8,
+    "currentRolls": 3.0,
+    "currentWeight": 518.4,
+    "beginningRolls": 3.0,
+    "beginningWeight": 518.4,
     "minRolls": 1
   },
   {
@@ -789,6 +919,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 83.9,
+    "beginningRolls": 0.0,
+    "beginningWeight": 83.9,
     "minRolls": 1
   },
   {
@@ -801,6 +933,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 92.1467,
     "currentRolls": 15.0,
     "currentWeight": 1382.2,
+    "beginningRolls": 15.0,
+    "beginningWeight": 1382.2,
     "minRolls": 1
   },
   {
@@ -813,6 +947,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 126.7,
     "currentRolls": 1.0,
     "currentWeight": 126.7,
+    "beginningRolls": 1.0,
+    "beginningWeight": 126.7,
     "minRolls": 1
   },
   {
@@ -825,6 +961,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 11.1,
+    "beginningRolls": 0.0,
+    "beginningWeight": 11.1,
     "minRolls": 1
   },
   {
@@ -837,6 +975,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 131.8,
     "currentRolls": 21.0,
     "currentWeight": 2767.8,
+    "beginningRolls": 21.0,
+    "beginningWeight": 2767.8,
     "minRolls": 1
   },
   {
@@ -849,6 +989,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 107.5,
+    "beginningRolls": 0.0,
+    "beginningWeight": 107.5,
     "minRolls": 1
   },
   {
@@ -861,6 +1003,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 149.2154,
     "currentRolls": 13.0,
     "currentWeight": 1939.8,
+    "beginningRolls": 13.0,
+    "beginningWeight": 1939.8,
     "minRolls": 1
   },
   {
@@ -873,6 +1017,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 5.9,
+    "beginningRolls": 0.0,
+    "beginningWeight": 5.9,
     "minRolls": 1
   },
   {
@@ -885,6 +1031,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 55.5,
+    "beginningRolls": 0.0,
+    "beginningWeight": 55.5,
     "minRolls": 1
   },
   {
@@ -897,6 +1045,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 90.4545,
     "currentRolls": 11.0,
     "currentWeight": 995.0,
+    "beginningRolls": 11.0,
+    "beginningWeight": 995.0,
     "minRolls": 1
   },
   {
@@ -909,6 +1059,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 24.55,
+    "beginningRolls": 0.0,
+    "beginningWeight": 24.55,
     "minRolls": 1
   },
   {
@@ -921,6 +1073,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 72.2,
     "currentRolls": 1.0,
     "currentWeight": 72.2,
+    "beginningRolls": 1.0,
+    "beginningWeight": 72.2,
     "minRolls": 1
   },
   {
@@ -933,6 +1087,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 99.15,
+    "beginningRolls": 0.0,
+    "beginningWeight": 99.15,
     "minRolls": 1
   },
   {
@@ -945,6 +1101,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 239.95,
+    "beginningRolls": 0.0,
+    "beginningWeight": 239.95,
     "minRolls": 1
   },
   {
@@ -957,6 +1115,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 61.15,
+    "beginningRolls": 0.0,
+    "beginningWeight": 61.15,
     "minRolls": 1
   },
   {
@@ -969,6 +1129,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 86.45,
+    "beginningRolls": 0.0,
+    "beginningWeight": 86.45,
     "minRolls": 1
   },
   {
@@ -981,6 +1143,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 84.8,
+    "beginningRolls": 0.0,
+    "beginningWeight": 84.8,
     "minRolls": 1
   },
   {
@@ -993,6 +1157,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 94.85,
+    "beginningRolls": 0.0,
+    "beginningWeight": 94.85,
     "minRolls": 1
   },
   {
@@ -1005,6 +1171,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 101.2,
     "currentRolls": 1.0,
     "currentWeight": 101.2,
+    "beginningRolls": 1.0,
+    "beginningWeight": 101.2,
     "minRolls": 1
   },
   {
@@ -1017,6 +1185,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 100.3731,
     "currentRolls": 26.0,
     "currentWeight": 2609.7,
+    "beginningRolls": 26.0,
+    "beginningWeight": 2609.7,
     "minRolls": 1
   },
   {
@@ -1029,6 +1199,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 42.1,
+    "beginningRolls": 0.0,
+    "beginningWeight": 42.1,
     "minRolls": 1
   },
   {
@@ -1041,6 +1213,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 99.7167,
     "currentRolls": 6.0,
     "currentWeight": 598.3,
+    "beginningRolls": 6.0,
+    "beginningWeight": 598.3,
     "minRolls": 1
   },
   {
@@ -1053,6 +1227,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 93.25,
+    "beginningRolls": 0.0,
+    "beginningWeight": 93.25,
     "minRolls": 1
   },
   {
@@ -1065,6 +1241,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 100.3167,
     "currentRolls": 6.0,
     "currentWeight": 601.9,
+    "beginningRolls": 6.0,
+    "beginningWeight": 601.9,
     "minRolls": 1
   },
   {
@@ -1077,6 +1255,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 84.05,
+    "beginningRolls": 0.0,
+    "beginningWeight": 84.05,
     "minRolls": 1
   },
   {
@@ -1089,6 +1269,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 11.37,
+    "beginningRolls": 0.0,
+    "beginningWeight": 11.37,
     "minRolls": 1
   },
   {
@@ -1101,6 +1283,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 16.23,
+    "beginningRolls": 0.0,
+    "beginningWeight": 16.23,
     "minRolls": 1
   },
   {
@@ -1113,6 +1297,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 91.6,
+    "beginningRolls": 0.0,
+    "beginningWeight": 91.6,
     "minRolls": 1
   },
   {
@@ -1125,46 +1311,40 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 107.8,
     "currentRolls": 3.0,
     "currentWeight": 323.4,
+    "beginningRolls": 3.0,
+    "beginningWeight": 323.4,
     "minRolls": 1
   },
   {
     "id": "QR-00095",
     "category": "CPP",
-    "product": "815mm (10/16/25)",
+    "product": "815mm (02/12/26)",
     "gauge": "25",
     "meters": "6000",
     "remarks": "WEIFU",
-    "weightPerRoll": 109.55,
-    "currentRolls": 2.0,
-    "currentWeight": 219.1,
+    "weightPerRoll": 110.4143,
+    "currentRolls": 7.0,
+    "currentWeight": 772.9,
+    "beginningRolls": 7.0,
+    "beginningWeight": 772.9,
     "minRolls": 1
   },
   {
     "id": "QR-00096",
     "category": "CPP",
-    "product": "815mm (10/16/25)",
+    "product": "815mm (02/12/26)",
     "gauge": "25",
     "meters": "leftover",
     "remarks": "WEIFU",
     "weightPerRoll": 0,
     "currentRolls": 0.0,
-    "currentWeight": 37.6,
+    "currentWeight": 53.5,
+    "beginningRolls": 0.0,
+    "beginningWeight": 53.5,
     "minRolls": 1
   },
   {
     "id": "QR-00097",
-    "category": "CPP",
-    "product": "815mm (02/12/26)",
-    "gauge": "25",
-    "meters": "6000",
-    "remarks": "WEIFU",
-    "weightPerRoll": 110.38,
-    "currentRolls": 10.0,
-    "currentWeight": 1103.8,
-    "minRolls": 1
-  },
-  {
-    "id": "QR-00098",
     "category": "CPP",
     "product": "855mm (08/23/19)",
     "gauge": "25",
@@ -1173,10 +1353,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 113.575,
     "currentRolls": 8.0,
     "currentWeight": 908.6,
+    "beginningRolls": 8.0,
+    "beginningWeight": 908.6,
     "minRolls": 1
   },
   {
-    "id": "QR-00099",
+    "id": "QR-00098",
     "category": "CPP",
     "product": "855mm (08/23/19)",
     "gauge": "25",
@@ -1185,10 +1367,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 43.1,
+    "beginningRolls": 0.0,
+    "beginningWeight": 43.1,
     "minRolls": 1
   },
   {
-    "id": "QR-00100",
+    "id": "QR-00099",
     "category": "CPP",
     "product": "855mm (01/09/25)",
     "gauge": "25",
@@ -1197,10 +1381,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 115.4,
     "currentRolls": 14.0,
     "currentWeight": 1615.6,
+    "beginningRolls": 14.0,
+    "beginningWeight": 1615.6,
     "minRolls": 1
   },
   {
-    "id": "QR-00101",
+    "id": "QR-00100",
     "category": "CPP",
     "product": "875mm (12/05/15)",
     "gauge": "25",
@@ -1209,6 +1395,22 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 103.9,
     "currentRolls": 4.0,
     "currentWeight": 415.6,
+    "beginningRolls": 4.0,
+    "beginningWeight": 415.6,
+    "minRolls": 1
+  },
+  {
+    "id": "QR-00101",
+    "category": "CPP",
+    "product": "875mm (09/03/20)",
+    "gauge": "25",
+    "meters": "leftover",
+    "remarks": "DEFU",
+    "weightPerRoll": 0,
+    "currentRolls": 0.0,
+    "currentWeight": 357.9,
+    "beginningRolls": 0.0,
+    "beginningWeight": 357.9,
     "minRolls": 1
   },
   {
@@ -1220,23 +1422,13 @@ window.STARTER_ITEMS = [
     "remarks": "DEFU",
     "weightPerRoll": 0,
     "currentRolls": 0.0,
-    "currentWeight": 357.9,
+    "currentWeight": 77.95,
+    "beginningRolls": 0.0,
+    "beginningWeight": 77.95,
     "minRolls": 1
   },
   {
     "id": "QR-00103",
-    "category": "CPP",
-    "product": "875mm (09/03/20)",
-    "gauge": "25",
-    "meters": "leftover",
-    "remarks": "DEFU",
-    "weightPerRoll": 0,
-    "currentRolls": 0.0,
-    "currentWeight": 77.95,
-    "minRolls": 1
-  },
-  {
-    "id": "QR-00104",
     "category": "CPP",
     "product": "875mm (02/05/22)",
     "gauge": "25",
@@ -1245,10 +1437,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 116.1,
     "currentRolls": 5.0,
     "currentWeight": 580.5,
+    "beginningRolls": 5.0,
+    "beginningWeight": 580.5,
     "minRolls": 1
   },
   {
-    "id": "QR-00105",
+    "id": "QR-00104",
     "category": "CPP",
     "product": "875mm (02/05/22)",
     "gauge": "25",
@@ -1257,10 +1451,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 29.3,
+    "beginningRolls": 0.0,
+    "beginningWeight": 29.3,
     "minRolls": 1
   },
   {
-    "id": "QR-00106",
+    "id": "QR-00105",
     "category": "CPP",
     "product": "895mm (11/10/22)",
     "gauge": "25",
@@ -1269,10 +1465,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 116.2,
     "currentRolls": 3.0,
     "currentWeight": 348.6,
+    "beginningRolls": 3.0,
+    "beginningWeight": 348.6,
     "minRolls": 1
   },
   {
-    "id": "QR-00107",
+    "id": "QR-00106",
     "category": "CPP",
     "product": "895mm (11/10/22)",
     "gauge": "25",
@@ -1281,10 +1479,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 16.15,
+    "beginningRolls": 0.0,
+    "beginningWeight": 16.15,
     "minRolls": 1
   },
   {
-    "id": "QR-00108",
+    "id": "QR-00107",
     "category": "CPP",
     "product": "895mm (03/24/23)",
     "gauge": "25",
@@ -1293,10 +1493,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 119.0714,
     "currentRolls": 7.0,
     "currentWeight": 833.5,
+    "beginningRolls": 7.0,
+    "beginningWeight": 833.5,
     "minRolls": 1
   },
   {
-    "id": "QR-00109",
+    "id": "QR-00108",
     "category": "CPP",
     "product": "910mm (12/01/25)",
     "gauge": "25",
@@ -1305,10 +1507,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 119.4571,
     "currentRolls": 7.0,
     "currentWeight": 836.2,
+    "beginningRolls": 7.0,
+    "beginningWeight": 836.2,
     "minRolls": 1
   },
   {
-    "id": "QR-00110",
+    "id": "QR-00109",
     "category": "CPP",
     "product": "910mm (12/01/25)",
     "gauge": "25",
@@ -1317,10 +1521,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 11.15,
+    "beginningRolls": 0.0,
+    "beginningWeight": 11.15,
     "minRolls": 1
   },
   {
-    "id": "QR-00111",
+    "id": "QR-00110",
     "category": "CPP",
     "product": "910mm (05/13/26)",
     "gauge": "25",
@@ -1329,6 +1535,22 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 122.5425,
     "currentRolls": 40.0,
     "currentWeight": 4901.7,
+    "beginningRolls": 40.0,
+    "beginningWeight": 4901.7,
+    "minRolls": 1
+  },
+  {
+    "id": "QR-00111",
+    "category": "CPP",
+    "product": "915mm (11/10/22)",
+    "gauge": "25",
+    "meters": "6000",
+    "remarks": "WEIFU",
+    "weightPerRoll": 119.2429,
+    "currentRolls": 7.0,
+    "currentWeight": 834.7,
+    "beginningRolls": 7.0,
+    "beginningWeight": 834.7,
     "minRolls": 1
   },
   {
@@ -1338,25 +1560,15 @@ window.STARTER_ITEMS = [
     "gauge": "25",
     "meters": "6000",
     "remarks": "WEIFU",
-    "weightPerRoll": 119.2429,
-    "currentRolls": 7.0,
-    "currentWeight": 834.7,
+    "weightPerRoll": 0,
+    "currentRolls": 0.0,
+    "currentWeight": 72.25,
+    "beginningRolls": 0.0,
+    "beginningWeight": 72.25,
     "minRolls": 1
   },
   {
     "id": "QR-00113",
-    "category": "CPP",
-    "product": "915mm (11/10/22)",
-    "gauge": "25",
-    "meters": "6000",
-    "remarks": "WEIFU",
-    "weightPerRoll": 0,
-    "currentRolls": 0.0,
-    "currentWeight": 72.25,
-    "minRolls": 1
-  },
-  {
-    "id": "QR-00114",
     "category": "CPP",
     "product": "945mm (12/05/14)",
     "gauge": "25",
@@ -1365,10 +1577,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 128.99,
     "currentRolls": 3.0,
     "currentWeight": 386.97,
+    "beginningRolls": 3.0,
+    "beginningWeight": 386.97,
     "minRolls": 1
   },
   {
-    "id": "QR-00115",
+    "id": "QR-00114",
     "category": "CPP",
     "product": "945mm (12/05/14)",
     "gauge": "25",
@@ -1377,10 +1591,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 75.25,
+    "beginningRolls": 0.0,
+    "beginningWeight": 75.25,
     "minRolls": 1
   },
   {
-    "id": "QR-00116",
+    "id": "QR-00115",
     "category": "CPP",
     "product": "995mm (09/03/20)",
     "gauge": "25",
@@ -1389,10 +1605,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 133.4,
+    "beginningRolls": 0.0,
+    "beginningWeight": 133.4,
     "minRolls": 1
   },
   {
-    "id": "QR-00117",
+    "id": "QR-00116",
     "category": "CPP",
     "product": "995mm (02/05/22)",
     "gauge": "25",
@@ -1401,10 +1619,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 133.8957,
     "currentRolls": 23.0,
     "currentWeight": 3079.6,
+    "beginningRolls": 23.0,
+    "beginningWeight": 3079.6,
     "minRolls": 1
   },
   {
-    "id": "QR-00118",
+    "id": "QR-00117",
     "category": "CPP",
     "product": "995mm (02/05/22)",
     "gauge": "25",
@@ -1413,10 +1633,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 10.1,
+    "beginningRolls": 0.0,
+    "beginningWeight": 10.1,
     "minRolls": 1
   },
   {
-    "id": "QR-00119",
+    "id": "QR-00118",
     "category": "CPP",
     "product": "1015mm (12/01/25)",
     "gauge": "25",
@@ -1425,10 +1647,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 134.3444,
     "currentRolls": 9.0,
     "currentWeight": 1209.1,
+    "beginningRolls": 9.0,
+    "beginningWeight": 1209.1,
     "minRolls": 1
   },
   {
-    "id": "QR-00120",
+    "id": "QR-00119",
     "category": "CPP",
     "product": "1015mm (12/01/25)",
     "gauge": "25",
@@ -1437,10 +1661,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 93.8,
+    "beginningRolls": 0.0,
+    "beginningWeight": 93.8,
     "minRolls": 1
   },
   {
-    "id": "QR-00121",
+    "id": "QR-00120",
     "category": "CPP",
     "product": "1015mm (02/05/22)",
     "gauge": "25",
@@ -1449,10 +1675,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 137.2,
     "currentRolls": 1.0,
     "currentWeight": 137.2,
+    "beginningRolls": 1.0,
+    "beginningWeight": 137.2,
     "minRolls": 1
   },
   {
-    "id": "QR-00122",
+    "id": "QR-00121",
     "category": "CPP",
     "product": "675mm (02/12/26)",
     "gauge": "30",
@@ -1461,10 +1689,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 108.0333,
     "currentRolls": 3.0,
     "currentWeight": 324.1,
+    "beginningRolls": 3.0,
+    "beginningWeight": 324.1,
     "minRolls": 1
   },
   {
-    "id": "QR-00123",
+    "id": "QR-00122",
     "category": "CPP",
     "product": "675mm (02/12/26)",
     "gauge": "30",
@@ -1473,10 +1703,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 63.6,
+    "beginningRolls": 0.0,
+    "beginningWeight": 63.6,
     "minRolls": 1
   },
   {
-    "id": "QR-00124",
+    "id": "QR-00123",
     "category": "CPP",
     "product": "675mm (05/13/26)",
     "gauge": "30",
@@ -1485,10 +1717,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 109.5571,
     "currentRolls": 7.0,
     "currentWeight": 766.9,
+    "beginningRolls": 7.0,
+    "beginningWeight": 766.9,
     "minRolls": 1
   },
   {
-    "id": "QR-00125",
+    "id": "QR-00124",
     "category": "CPP",
     "product": "675mm (06/25/26)",
     "gauge": "30",
@@ -1497,10 +1731,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 108.4917,
     "currentRolls": 12.0,
     "currentWeight": 1301.9,
+    "beginningRolls": 12.0,
+    "beginningWeight": 1301.9,
     "minRolls": 1
   },
   {
-    "id": "QR-00126",
+    "id": "QR-00125",
     "category": "CPP",
     "product": "725mm (12/01/25)",
     "gauge": "30",
@@ -1509,10 +1745,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 115.24,
     "currentRolls": 5.0,
     "currentWeight": 576.2,
+    "beginningRolls": 5.0,
+    "beginningWeight": 576.2,
     "minRolls": 1
   },
   {
-    "id": "QR-00127",
+    "id": "QR-00126",
     "category": "CPP",
     "product": "725mm (12/01/25)",
     "gauge": "30",
@@ -1521,6 +1759,22 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 40.45,
+    "beginningRolls": 0.0,
+    "beginningWeight": 40.45,
+    "minRolls": 1
+  },
+  {
+    "id": "QR-00127",
+    "category": "CPP",
+    "product": "775mm (09/01/25)",
+    "gauge": "30",
+    "meters": "6000",
+    "remarks": "WEIFU",
+    "weightPerRoll": 123.3,
+    "currentRolls": 0.0,
+    "currentWeight": 0.0,
+    "beginningRolls": 0.0,
+    "beginningWeight": 0.0,
     "minRolls": 1
   },
   {
@@ -1528,23 +1782,27 @@ window.STARTER_ITEMS = [
     "category": "CPP",
     "product": "775mm (09/01/25)",
     "gauge": "30",
-    "meters": "6000",
+    "meters": "leftover",
     "remarks": "WEIFU",
-    "weightPerRoll": 123.3,
-    "currentRolls": 4.0,
-    "currentWeight": 493.2,
+    "weightPerRoll": 0,
+    "currentRolls": 0.0,
+    "currentWeight": 76.0,
+    "beginningRolls": 0.0,
+    "beginningWeight": 76.0,
     "minRolls": 1
   },
   {
     "id": "QR-00129",
     "category": "CPP",
-    "product": "775mm (09/01/25)",
+    "product": "775mm (08/08/26)",
     "gauge": "30",
-    "meters": "leftover",
+    "meters": "6000",
     "remarks": "WEIFU",
-    "weightPerRoll": 0,
-    "currentRolls": 0.0,
-    "currentWeight": 71.7,
+    "weightPerRoll": 123.7333,
+    "currentRolls": 6.0,
+    "currentWeight": 742.4,
+    "beginningRolls": 6.0,
+    "beginningWeight": 742.4,
     "minRolls": 1
   },
   {
@@ -1554,9 +1812,11 @@ window.STARTER_ITEMS = [
     "gauge": "30",
     "meters": "6000",
     "remarks": "WEIFU",
-    "weightPerRoll": 135.3125,
-    "currentRolls": 8.0,
-    "currentWeight": 1082.5,
+    "weightPerRoll": 135.5667,
+    "currentRolls": 6.0,
+    "currentWeight": 813.4,
+    "beginningRolls": 6.0,
+    "beginningWeight": 813.4,
     "minRolls": 1
   },
   {
@@ -1568,7 +1828,9 @@ window.STARTER_ITEMS = [
     "remarks": "WEIFU",
     "weightPerRoll": 0,
     "currentRolls": 0.0,
-    "currentWeight": 112.95,
+    "currentWeight": 65.05,
+    "beginningRolls": 0.0,
+    "beginningWeight": 65.05,
     "minRolls": 1
   },
   {
@@ -1578,9 +1840,11 @@ window.STARTER_ITEMS = [
     "gauge": "30",
     "meters": "6000",
     "remarks": "WEIFU",
-    "weightPerRoll": 137.9667,
-    "currentRolls": 3.0,
-    "currentWeight": 413.9,
+    "weightPerRoll": 138.0,
+    "currentRolls": 1.0,
+    "currentWeight": 138.0,
+    "beginningRolls": 1.0,
+    "beginningWeight": 138.0,
     "minRolls": 1
   },
   {
@@ -1592,7 +1856,9 @@ window.STARTER_ITEMS = [
     "remarks": "WEIFU",
     "weightPerRoll": 0,
     "currentRolls": 0.0,
-    "currentWeight": 99.5,
+    "currentWeight": 56.9,
+    "beginningRolls": 0.0,
+    "beginningWeight": 56.9,
     "minRolls": 1
   },
   {
@@ -1605,6 +1871,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 140.4,
     "currentRolls": 6.0,
     "currentWeight": 842.4,
+    "beginningRolls": 6.0,
+    "beginningWeight": 842.4,
     "minRolls": 1
   },
   {
@@ -1617,6 +1885,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 137.275,
     "currentRolls": 8.0,
     "currentWeight": 1098.2,
+    "beginningRolls": 8.0,
+    "beginningWeight": 1098.2,
     "minRolls": 1
   },
   {
@@ -1629,6 +1899,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 133.35,
+    "beginningRolls": 0.0,
+    "beginningWeight": 133.35,
     "minRolls": 1
   },
   {
@@ -1641,6 +1913,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 144.65,
     "currentRolls": 10.0,
     "currentWeight": 1446.5,
+    "beginningRolls": 10.0,
+    "beginningWeight": 1446.5,
     "minRolls": 1
   },
   {
@@ -1650,9 +1924,11 @@ window.STARTER_ITEMS = [
     "gauge": "30",
     "meters": "6000",
     "remarks": "WEIFU",
-    "weightPerRoll": 153.6077,
-    "currentRolls": 13.0,
-    "currentWeight": 1996.9,
+    "weightPerRoll": 153.46,
+    "currentRolls": 1.0,
+    "currentWeight": 153.1,
+    "beginningRolls": 1.0,
+    "beginningWeight": 153.1,
     "minRolls": 1
   },
   {
@@ -1664,47 +1940,41 @@ window.STARTER_ITEMS = [
     "remarks": "WEIFU",
     "weightPerRoll": 0,
     "currentRolls": 0.0,
-    "currentWeight": 71.5,
+    "currentWeight": 105.1,
+    "beginningRolls": 0.0,
+    "beginningWeight": 105.1,
     "minRolls": 1
   },
   {
     "id": "QR-00140",
     "category": "CPP",
-    "product": "625mm (12/01/25)",
+    "product": "625mm (02/12/26)",
     "gauge": "35",
     "meters": "6000",
     "remarks": "WEIFU",
-    "weightPerRoll": 115.6125,
-    "currentRolls": 8.0,
-    "currentWeight": 924.9,
+    "weightPerRoll": 116.9,
+    "currentRolls": 2.0,
+    "currentWeight": 233.8,
+    "beginningRolls": 2.0,
+    "beginningWeight": 233.8,
     "minRolls": 1
   },
   {
     "id": "QR-00141",
     "category": "CPP",
-    "product": "625mm (12/01/25)",
+    "product": "625mm (02/12/26)",
     "gauge": "35",
     "meters": "leftover",
     "remarks": "WEIFU",
     "weightPerRoll": 0,
     "currentRolls": 0.0,
-    "currentWeight": 56.05,
+    "currentWeight": 22.0,
+    "beginningRolls": 0.0,
+    "beginningWeight": 22.0,
     "minRolls": 1
   },
   {
     "id": "QR-00142",
-    "category": "CPP",
-    "product": "625mm (02/12/26)",
-    "gauge": "35",
-    "meters": "6000",
-    "remarks": "WEIFU",
-    "weightPerRoll": 116.015,
-    "currentRolls": 20.0,
-    "currentWeight": 2320.3,
-    "minRolls": 1
-  },
-  {
-    "id": "QR-00143",
     "category": "CPP",
     "product": "975mm (04/30/20)",
     "gauge": "35",
@@ -1713,10 +1983,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 134.4667,
     "currentRolls": 12.0,
     "currentWeight": 1613.6,
+    "beginningRolls": 12.0,
+    "beginningWeight": 1613.6,
     "minRolls": 1
   },
   {
-    "id": "QR-00144",
+    "id": "QR-00143",
     "category": "CPP",
     "product": "1045mm (05/25/18)",
     "gauge": "35",
@@ -1725,10 +1997,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 153.5,
     "currentRolls": 1.0,
     "currentWeight": 153.5,
+    "beginningRolls": 1.0,
+    "beginningWeight": 153.5,
     "minRolls": 1
   },
   {
-    "id": "QR-00145",
+    "id": "QR-00144",
     "category": "CPP",
     "product": "1050mm (06/10/24)",
     "gauge": "35",
@@ -1737,10 +2011,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 195.6,
     "currentRolls": 1.0,
     "currentWeight": 195.6,
+    "beginningRolls": 1.0,
+    "beginningWeight": 195.6,
     "minRolls": 1
   },
   {
-    "id": "QR-00146",
+    "id": "QR-00145",
     "category": "CPP",
     "product": "1050mm (06/10/24)",
     "gauge": "35",
@@ -1749,6 +2025,22 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 57.64,
+    "beginningRolls": 0.0,
+    "beginningWeight": 57.64,
+    "minRolls": 1
+  },
+  {
+    "id": "QR-00146",
+    "category": "CPP",
+    "product": "1050mm (SLIT 525x35)",
+    "gauge": "35",
+    "meters": "leftover",
+    "remarks": "WEIFU",
+    "weightPerRoll": 20.39,
+    "currentRolls": 2.0,
+    "currentWeight": 40.78,
+    "beginningRolls": 2.0,
+    "beginningWeight": 40.78,
     "minRolls": 1
   },
   {
@@ -1758,21 +2050,25 @@ window.STARTER_ITEMS = [
     "gauge": "35",
     "meters": "leftover",
     "remarks": "WEIFU",
-    "weightPerRoll": 20.39,
-    "currentRolls": 2.0,
-    "currentWeight": 40.78,
+    "weightPerRoll": 0,
+    "currentRolls": 0.0,
+    "currentWeight": 36.55,
+    "beginningRolls": 0.0,
+    "beginningWeight": 36.55,
     "minRolls": 1
   },
   {
     "id": "QR-00148",
     "category": "CPP",
-    "product": "1050mm (SLIT 525x35)",
-    "gauge": "35",
+    "product": "695mm (09/03/20)",
+    "gauge": "40",
     "meters": "leftover",
-    "remarks": "WEIFU",
-    "weightPerRoll": 0,
-    "currentRolls": 0.0,
-    "currentWeight": 36.55,
+    "remarks": "DEFU",
+    "weightPerRoll": 99.4,
+    "currentRolls": 2.0,
+    "currentWeight": 198.8,
+    "beginningRolls": 2.0,
+    "beginningWeight": 198.8,
     "minRolls": 1
   },
   {
@@ -1782,21 +2078,25 @@ window.STARTER_ITEMS = [
     "gauge": "40",
     "meters": "leftover",
     "remarks": "DEFU",
-    "weightPerRoll": 99.4,
-    "currentRolls": 2.0,
-    "currentWeight": 198.8,
+    "weightPerRoll": 97.7,
+    "currentRolls": 1.0,
+    "currentWeight": 97.7,
+    "beginningRolls": 1.0,
+    "beginningWeight": 97.7,
     "minRolls": 1
   },
   {
     "id": "QR-00150",
     "category": "CPP",
-    "product": "695mm (09/03/20)",
+    "product": "695mm (02/12/26)",
     "gauge": "40",
-    "meters": "leftover",
-    "remarks": "DEFU",
-    "weightPerRoll": 97.7,
-    "currentRolls": 1.0,
-    "currentWeight": 97.7,
+    "meters": "4000",
+    "remarks": "WEIFU",
+    "weightPerRoll": 100.0125,
+    "currentRolls": 6.0,
+    "currentWeight": 601.0,
+    "beginningRolls": 6.0,
+    "beginningWeight": 601.0,
     "minRolls": 1
   },
   {
@@ -1804,27 +2104,17 @@ window.STARTER_ITEMS = [
     "category": "CPP",
     "product": "695mm (02/12/26)",
     "gauge": "40",
-    "meters": "4000",
-    "remarks": "WEIFU",
-    "weightPerRoll": 100.0125,
-    "currentRolls": 16.0,
-    "currentWeight": 1600.2,
-    "minRolls": 1
-  },
-  {
-    "id": "QR-00152",
-    "category": "CPP",
-    "product": "695mm (02/12/26)",
-    "gauge": "40",
     "meters": "leftover",
     "remarks": "WEIFU",
     "weightPerRoll": 0,
     "currentRolls": 0.0,
-    "currentWeight": 42.4,
+    "currentWeight": 40.15,
+    "beginningRolls": 0.0,
+    "beginningWeight": 40.15,
     "minRolls": 1
   },
   {
-    "id": "QR-00153",
+    "id": "QR-00152",
     "category": "CPP",
     "product": "695mm (05/13/26)",
     "gauge": "40",
@@ -1833,10 +2123,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 100.1083,
     "currentRolls": 24.0,
     "currentWeight": 2402.6,
+    "beginningRolls": 24.0,
+    "beginningWeight": 2402.6,
     "minRolls": 1
   },
   {
-    "id": "QR-00154",
+    "id": "QR-00153",
     "category": "CPP",
     "product": "775mm (08/23/19)",
     "gauge": "40",
@@ -1845,10 +2137,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 112.9,
     "currentRolls": 1.0,
     "currentWeight": 112.9,
+    "beginningRolls": 1.0,
+    "beginningWeight": 112.9,
     "minRolls": 1
   },
   {
-    "id": "QR-00155",
+    "id": "QR-00154",
     "category": "VMCPP",
     "product": "755mm (06/25/26)",
     "gauge": "25",
@@ -1857,10 +2151,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 102.9667,
     "currentRolls": 9.0,
     "currentWeight": 926.7,
+    "beginningRolls": 9.0,
+    "beginningWeight": 926.7,
     "minRolls": 1
   },
   {
-    "id": "QR-00156",
+    "id": "QR-00155",
     "category": "VMCPP",
     "product": "775mm (10/16/25)",
     "gauge": "25",
@@ -1869,34 +2165,68 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 42.05,
+    "beginningRolls": 0.0,
+    "beginningWeight": 42.05,
     "minRolls": 1
   },
   {
-    "id": "QR-00157",
-    "category": "VMCPP",
-    "product": "915mm (05/13/26)",
-    "gauge": "25",
-    "meters": "6000",
-    "remarks": "WEIFU",
-    "weightPerRoll": 0,
-    "currentRolls": 0.0,
-    "currentWeight": 50.6,
-    "minRolls": 1
-  },
-  {
-    "id": "QR-00158",
+    "id": "QR-00156",
     "category": "VMCPP",
     "product": "915mm (06/25/26)",
     "gauge": "25",
     "meters": "6000",
     "remarks": "WEIFU",
-    "weightPerRoll": 124.18,
-    "currentRolls": 10.0,
-    "currentWeight": 1241.8,
+    "weightPerRoll": 124.75,
+    "currentRolls": 0.0,
+    "currentWeight": 0.0,
+    "beginningRolls": 0.0,
+    "beginningWeight": 0.0,
+    "minRolls": 1
+  },
+  {
+    "id": "QR-00157",
+    "category": "VMCPP",
+    "product": "915mm (06/25/26)",
+    "gauge": "25",
+    "meters": "leftover",
+    "remarks": "WEIFU",
+    "weightPerRoll": 0,
+    "currentRolls": 0.0,
+    "currentWeight": 0.0,
+    "beginningRolls": 0.0,
+    "beginningWeight": 0.0,
+    "minRolls": 1
+  },
+  {
+    "id": "QR-00158",
+    "category": "VMCPP",
+    "product": "915mm (08/08/26)",
+    "gauge": "25",
+    "meters": "6000",
+    "remarks": "WEIFU",
+    "weightPerRoll": 123.03,
+    "currentRolls": 8.0,
+    "currentWeight": 983.6,
+    "beginningRolls": 8.0,
+    "beginningWeight": 983.6,
     "minRolls": 1
   },
   {
     "id": "QR-00159",
+    "category": "VMCPP",
+    "product": "915mm (08/08/26)",
+    "gauge": "25",
+    "meters": "6000",
+    "remarks": "WEIFU",
+    "weightPerRoll": 0,
+    "currentRolls": 0.0,
+    "currentWeight": 12.55,
+    "beginningRolls": 0.0,
+    "beginningWeight": 12.55,
+    "minRolls": 1
+  },
+  {
+    "id": "QR-00160",
     "category": "VMCPP",
     "product": "1035mm (06/10/24)",
     "gauge": "25",
@@ -1905,10 +2235,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 116.7,
+    "beginningRolls": 0.0,
+    "beginningWeight": 116.7,
     "minRolls": 1
   },
   {
-    "id": "QR-00160",
+    "id": "QR-00161",
     "category": "VMCPP",
     "product": "1035mm (09/01/25)",
     "gauge": "25",
@@ -1917,10 +2249,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 139.9667,
     "currentRolls": 6.0,
     "currentWeight": 839.8,
+    "beginningRolls": 6.0,
+    "beginningWeight": 839.8,
     "minRolls": 1
   },
   {
-    "id": "QR-00161",
+    "id": "QR-00162",
     "category": "VMCPP",
     "product": "815mm (4/28/15)",
     "gauge": "30",
@@ -1929,10 +2263,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 133.5,
     "currentRolls": 3.0,
     "currentWeight": 400.5,
+    "beginningRolls": 3.0,
+    "beginningWeight": 400.5,
     "minRolls": 1
   },
   {
-    "id": "QR-00162",
+    "id": "QR-00163",
     "category": "VMCPP",
     "product": "815mm (4/28/15)",
     "gauge": "30",
@@ -1941,10 +2277,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 16.2,
+    "beginningRolls": 0.0,
+    "beginningWeight": 16.2,
     "minRolls": 1
   },
   {
-    "id": "QR-00163",
+    "id": "QR-00164",
     "category": "VMCPP",
     "product": "815mm (04/18/17)",
     "gauge": "30",
@@ -1953,10 +2291,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 7.4,
     "currentRolls": 1.0,
     "currentWeight": 7.4,
+    "beginningRolls": 1.0,
+    "beginningWeight": 7.4,
     "minRolls": 1
   },
   {
-    "id": "QR-00164",
+    "id": "QR-00165",
     "category": "VMCPP",
     "product": "815mm (09/01/25)",
     "gauge": "30",
@@ -1965,10 +2305,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 131.3667,
     "currentRolls": 6.0,
     "currentWeight": 788.2,
+    "beginningRolls": 6.0,
+    "beginningWeight": 788.2,
     "minRolls": 1
   },
   {
-    "id": "QR-00165",
+    "id": "QR-00166",
     "category": "VMCPP",
     "product": "835mm (11/03/14)",
     "gauge": "30",
@@ -1977,10 +2319,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 91.7,
+    "beginningRolls": 0.0,
+    "beginningWeight": 91.7,
     "minRolls": 1
   },
   {
-    "id": "QR-00166",
+    "id": "QR-00167",
     "category": "VMCPP",
     "product": "835mm (1/27/15)",
     "gauge": "30",
@@ -1989,10 +2333,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 130.3,
     "currentRolls": 2.0,
     "currentWeight": 260.6,
+    "beginningRolls": 2.0,
+    "beginningWeight": 260.6,
     "minRolls": 1
   },
   {
-    "id": "QR-00167",
+    "id": "QR-00168",
     "category": "VMCPP",
     "product": "835mm (1/27/15)",
     "gauge": "30",
@@ -2001,10 +2347,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 133.4,
     "currentRolls": 2.0,
     "currentWeight": 266.8,
+    "beginningRolls": 2.0,
+    "beginningWeight": 266.8,
     "minRolls": 1
   },
   {
-    "id": "QR-00168",
+    "id": "QR-00169",
     "category": "VMCPP",
     "product": "835mm (1/27/15)",
     "gauge": "30",
@@ -2013,10 +2361,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 136.8,
     "currentRolls": 2.0,
     "currentWeight": 273.6,
+    "beginningRolls": 2.0,
+    "beginningWeight": 273.6,
     "minRolls": 1
   },
   {
-    "id": "QR-00169",
+    "id": "QR-00170",
     "category": "VMCPP",
     "product": "1015mm (4/28/15)",
     "gauge": "30",
@@ -2025,10 +2375,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 166.26,
     "currentRolls": 3.0,
     "currentWeight": 498.78,
+    "beginningRolls": 3.0,
+    "beginningWeight": 498.78,
     "minRolls": 1
   },
   {
-    "id": "QR-00170",
+    "id": "QR-00171",
     "category": "VMCPP",
     "product": "1015mm (4/28/15)",
     "gauge": "30",
@@ -2037,10 +2389,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 87.15,
+    "beginningRolls": 0.0,
+    "beginningWeight": 87.15,
     "minRolls": 1
   },
   {
-    "id": "QR-00171",
+    "id": "QR-00172",
     "category": "PET",
     "product": "1030mm (9/16/13)",
     "gauge": "12",
@@ -2049,10 +2403,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 0.0,
+    "beginningRolls": 0.0,
+    "beginningWeight": 0.0,
     "minRolls": 1
   },
   {
-    "id": "QR-00172",
+    "id": "QR-00173",
     "category": "PET",
     "product": "552mm (11/22/13)",
     "gauge": "18",
@@ -2061,10 +2417,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 7.9,
+    "beginningRolls": 0.0,
+    "beginningWeight": 7.9,
     "minRolls": 1
   },
   {
-    "id": "QR-00173",
+    "id": "QR-00174",
     "category": "PET",
     "product": "800mm (11/22/13)",
     "gauge": "18",
@@ -2073,10 +2431,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 112.8,
+    "beginningRolls": 0.0,
+    "beginningWeight": 112.8,
     "minRolls": 1
   },
   {
-    "id": "QR-00174",
+    "id": "QR-00175",
     "category": "VMBOPP",
     "product": "905mm (01/06/21)",
     "gauge": "18",
@@ -2085,10 +2445,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 24.5,
     "currentRolls": 1.0,
     "currentWeight": 24.5,
+    "beginningRolls": 1.0,
+    "beginningWeight": 24.5,
     "minRolls": 1
   },
   {
-    "id": "QR-00175",
+    "id": "QR-00176",
     "category": "NYLON",
     "product": "640mm(09/20/25)",
     "gauge": "15",
@@ -2097,10 +2459,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 0.0,
+    "beginningRolls": 0.0,
+    "beginningWeight": 0.0,
     "minRolls": 1
   },
   {
-    "id": "QR-00176",
+    "id": "QR-00177",
     "category": "NYLON",
     "product": "825mm(12/27/16)",
     "gauge": "12",
@@ -2109,10 +2473,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 162.9667,
     "currentRolls": 3.0,
     "currentWeight": 488.9,
+    "beginningRolls": 3.0,
+    "beginningWeight": 488.9,
     "minRolls": 1
   },
   {
-    "id": "QR-00177",
+    "id": "QR-00178",
     "category": "NYLON",
     "product": "825mm(12/27/16)",
     "gauge": "12",
@@ -2121,10 +2487,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 129.0,
+    "beginningRolls": 0.0,
+    "beginningWeight": 129.0,
     "minRolls": 1
   },
   {
-    "id": "QR-00178",
+    "id": "QR-00179",
     "category": "NYLON",
     "product": "860mm (11/06/19)",
     "gauge": "12",
@@ -2133,10 +2501,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 7.58,
+    "beginningRolls": 0.0,
+    "beginningWeight": 7.58,
     "minRolls": 1
   },
   {
-    "id": "QR-00179",
+    "id": "QR-00180",
     "category": "NYLON",
     "product": "700mm (01/25/23)",
     "gauge": "20",
@@ -2145,10 +2515,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 6.9,
     "currentRolls": 1.0,
     "currentWeight": 6.9,
+    "beginningRolls": 1.0,
+    "beginningWeight": 6.9,
     "minRolls": 1
   },
   {
-    "id": "QR-00180",
+    "id": "QR-00181",
     "category": "NYLON",
     "product": "965mm (9/16/13)",
     "gauge": "20",
@@ -2157,10 +2529,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 102.4,
     "currentRolls": 1.0,
     "currentWeight": 102.4,
+    "beginningRolls": 1.0,
+    "beginningWeight": 102.4,
     "minRolls": 1
   },
   {
-    "id": "QR-00181",
+    "id": "QR-00182",
     "category": "NYLON",
     "product": "965mm (9/16/13)",
     "gauge": "25",
@@ -2169,10 +2543,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 103.8,
     "currentRolls": 1.0,
     "currentWeight": 103.8,
+    "beginningRolls": 1.0,
+    "beginningWeight": 103.8,
     "minRolls": 1
   },
   {
-    "id": "QR-00182",
+    "id": "QR-00183",
     "category": "NYLON",
     "product": "1035mm(9/16/13)",
     "gauge": "30",
@@ -2181,10 +2557,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 64.4,
     "currentRolls": 1.0,
     "currentWeight": 64.4,
+    "beginningRolls": 1.0,
+    "beginningWeight": 64.4,
     "minRolls": 1
   },
   {
-    "id": "QR-00183",
+    "id": "QR-00184",
     "category": "NYLON",
     "product": "735mm (02/20/23)",
     "gauge": "35",
@@ -2193,10 +2571,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 36.1,
+    "beginningRolls": 0.0,
+    "beginningWeight": 36.1,
     "minRolls": 1
   },
   {
-    "id": "QR-00184",
+    "id": "QR-00185",
     "category": "NYLON",
     "product": "830mm (07/25/17)",
     "gauge": "35",
@@ -2205,18 +2585,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 143.8,
     "currentRolls": 4.0,
     "currentWeight": 575.2,
-    "minRolls": 1
-  },
-  {
-    "id": "QR-00185",
-    "category": "NYLON",
-    "product": "830mm (07/25/17)",
-    "gauge": "35",
-    "meters": "leftover",
-    "remarks": "GM-RIS",
-    "weightPerRoll": 0,
-    "currentRolls": 0.0,
-    "currentWeight": 157.0,
+    "beginningRolls": 4.0,
+    "beginningWeight": 575.2,
     "minRolls": 1
   },
   {
@@ -2225,14 +2595,30 @@ window.STARTER_ITEMS = [
     "product": "830mm (07/25/17)",
     "gauge": "35",
     "meters": "leftover",
-    "remarks": "GM",
+    "remarks": "GM-RIS",
     "weightPerRoll": 0,
     "currentRolls": 0.0,
-    "currentWeight": 17.9,
+    "currentWeight": 157.0,
+    "beginningRolls": 0.0,
+    "beginningWeight": 157.0,
     "minRolls": 1
   },
   {
     "id": "QR-00187",
+    "category": "NYLON",
+    "product": "830mm (07/25/17)",
+    "gauge": "35",
+    "meters": "leftover",
+    "remarks": "GM",
+    "weightPerRoll": 0,
+    "currentRolls": 0.0,
+    "currentWeight": 17.9,
+    "beginningRolls": 0.0,
+    "beginningWeight": 17.9,
+    "minRolls": 1
+  },
+  {
+    "id": "QR-00188",
     "category": "NYLON",
     "product": "800mm (07/18/17)",
     "gauge": "36",
@@ -2241,10 +2627,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 22.5,
+    "beginningRolls": 0.0,
+    "beginningWeight": 22.5,
     "minRolls": 1
   },
   {
-    "id": "QR-00188",
+    "id": "QR-00189",
     "category": "NYLON",
     "product": "800mm (07/18/17)",
     "gauge": "36",
@@ -2253,10 +2641,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 57.8,
+    "beginningRolls": 0.0,
+    "beginningWeight": 57.8,
     "minRolls": 1
   },
   {
-    "id": "QR-00189",
+    "id": "QR-00190",
     "category": "NYLON",
     "product": "715mm (10/02/23)",
     "gauge": "37",
@@ -2265,10 +2655,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 0.0,
+    "beginningRolls": 0.0,
+    "beginningWeight": 0.0,
     "minRolls": 1
   },
   {
-    "id": "QR-00190",
+    "id": "QR-00191",
     "category": "NYLON",
     "product": "1050mm (6/11/15)",
     "gauge": "37",
@@ -2277,10 +2669,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 123.6,
     "currentRolls": 1.0,
     "currentWeight": 123.6,
+    "beginningRolls": 1.0,
+    "beginningWeight": 123.6,
     "minRolls": 1
   },
   {
-    "id": "QR-00191",
+    "id": "QR-00192",
     "category": "NYLON",
     "product": "1055mm (05/25/26)",
     "gauge": "37",
@@ -2289,10 +2683,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 115.0,
     "currentRolls": 1.0,
     "currentWeight": 115.0,
+    "beginningRolls": 1.0,
+    "beginningWeight": 115.0,
     "minRolls": 1
   },
   {
-    "id": "QR-00192",
+    "id": "QR-00193",
     "category": "NYLON",
     "product": "1055mm (05/25/26)",
     "gauge": "37",
@@ -2301,10 +2697,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 44.35,
+    "beginningRolls": 0.0,
+    "beginningWeight": 44.35,
     "minRolls": 1
   },
   {
-    "id": "QR-00193",
+    "id": "QR-00194",
     "category": "NYLON",
     "product": "870mm (9/16/13)",
     "gauge": "40",
@@ -2313,10 +2711,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 28.2,
     "currentRolls": 1.0,
     "currentWeight": 28.2,
+    "beginningRolls": 1.0,
+    "beginningWeight": 28.2,
     "minRolls": 1
   },
   {
-    "id": "QR-00194",
+    "id": "QR-00195",
     "category": "NYLON",
     "product": "880mm (02/04/20)",
     "gauge": "40",
@@ -2325,10 +2725,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 17.85,
+    "beginningRolls": 0.0,
+    "beginningWeight": 17.85,
     "minRolls": 1
   },
   {
-    "id": "QR-00195",
+    "id": "QR-00196",
     "category": "NYLON",
     "product": "915mm (9/16/13)",
     "gauge": "40",
@@ -2337,10 +2739,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 101.6,
     "currentRolls": 1.0,
     "currentWeight": 101.6,
+    "beginningRolls": 1.0,
+    "beginningWeight": 101.6,
     "minRolls": 1
   },
   {
-    "id": "QR-00196",
+    "id": "QR-00197",
     "category": "NYLON",
     "product": "975mm (3/23/15)",
     "gauge": "40",
@@ -2349,10 +2753,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 41.0,
+    "beginningRolls": 0.0,
+    "beginningWeight": 41.0,
     "minRolls": 1
   },
   {
-    "id": "QR-00197",
+    "id": "QR-00198",
     "category": "NYLON",
     "product": "860mm (10/30/19)",
     "gauge": "60",
@@ -2361,10 +2767,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 45.4,
+    "beginningRolls": 0.0,
+    "beginningWeight": 45.4,
     "minRolls": 1
   },
   {
-    "id": "QR-00198",
+    "id": "QR-00199",
     "category": "NYLON",
     "product": "650mm (09/23/25)",
     "gauge": "70",
@@ -2373,10 +2781,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 10.0,
+    "beginningRolls": 0.0,
+    "beginningWeight": 10.0,
     "minRolls": 1
   },
   {
-    "id": "QR-00199",
+    "id": "QR-00200",
     "category": "NYLON",
     "product": "600mm(8/12/14)",
     "gauge": "",
@@ -2385,18 +2795,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 21.6,
     "currentRolls": 1.0,
     "currentWeight": 21.6,
-    "minRolls": 1
-  },
-  {
-    "id": "QR-00200",
-    "category": "NYLON",
-    "product": "895mm(1/19/14)",
-    "gauge": "28",
-    "meters": "",
-    "remarks": "china",
-    "weightPerRoll": 213.12,
-    "currentRolls": 15.0,
-    "currentWeight": 3196.8,
+    "beginningRolls": 1.0,
+    "beginningWeight": 21.6,
     "minRolls": 1
   },
   {
@@ -2405,14 +2805,30 @@ window.STARTER_ITEMS = [
     "product": "895mm(1/19/14)",
     "gauge": "28",
     "meters": "",
-    "remarks": "used",
-    "weightPerRoll": 0,
-    "currentRolls": 0.0,
-    "currentWeight": 161.5,
+    "remarks": "china",
+    "weightPerRoll": 213.1571,
+    "currentRolls": 14.0,
+    "currentWeight": 2984.2,
+    "beginningRolls": 14.0,
+    "beginningWeight": 2984.2,
     "minRolls": 1
   },
   {
     "id": "QR-00202",
+    "category": "NYLON",
+    "product": "895mm(1/19/14)",
+    "gauge": "28",
+    "meters": "",
+    "remarks": "used",
+    "weightPerRoll": 0,
+    "currentRolls": 0.0,
+    "currentWeight": 161.5,
+    "beginningRolls": 0.0,
+    "beginningWeight": 161.5,
+    "minRolls": 1
+  },
+  {
+    "id": "QR-00203",
     "category": "NYLON",
     "product": "250mm (05/28/19)",
     "gauge": "20",
@@ -2421,10 +2837,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 1.85,
+    "beginningRolls": 0.0,
+    "beginningWeight": 1.85,
     "minRolls": 1
   },
   {
-    "id": "QR-00203",
+    "id": "QR-00204",
     "category": "NYLON",
     "product": "110mm(3/06/14)",
     "gauge": "25",
@@ -2433,10 +2851,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 8.0,
     "currentRolls": 4.0,
     "currentWeight": 32.0,
+    "beginningRolls": 4.0,
+    "beginningWeight": 32.0,
     "minRolls": 1
   },
   {
-    "id": "QR-00204",
+    "id": "QR-00205",
     "category": "NYLON",
     "product": "110mm(4/09/14)",
     "gauge": "25",
@@ -2445,10 +2865,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 7.6333,
     "currentRolls": 6.0,
     "currentWeight": 45.8,
+    "beginningRolls": 6.0,
+    "beginningWeight": 45.8,
     "minRolls": 1
   },
   {
-    "id": "QR-00205",
+    "id": "QR-00206",
     "category": "NYLON",
     "product": "120mm(8/29/14)",
     "gauge": "25",
@@ -2457,10 +2879,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 11.5,
     "currentRolls": 3.0,
     "currentWeight": 34.5,
+    "beginningRolls": 3.0,
+    "beginningWeight": 34.5,
     "minRolls": 1
   },
   {
-    "id": "QR-00206",
+    "id": "QR-00207",
     "category": "NYLON",
     "product": "180mm(10/17/14)",
     "gauge": "25",
@@ -2469,10 +2893,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 11.9833,
     "currentRolls": 6.0,
     "currentWeight": 71.9,
+    "beginningRolls": 6.0,
+    "beginningWeight": 71.9,
     "minRolls": 1
   },
   {
-    "id": "QR-00207",
+    "id": "QR-00208",
     "category": "NYLON",
     "product": "135mm(4/26/14)",
     "gauge": "30",
@@ -2481,10 +2907,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 14.97,
     "currentRolls": 6.0,
     "currentWeight": 89.82,
+    "beginningRolls": 6.0,
+    "beginningWeight": 89.82,
     "minRolls": 1
   },
   {
-    "id": "QR-00208",
+    "id": "QR-00209",
     "category": "NYLON",
     "product": "120mm (05/14/14)",
     "gauge": "20",
@@ -2493,10 +2921,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 12.6,
     "currentRolls": 1.0,
     "currentWeight": 12.6,
+    "beginningRolls": 1.0,
+    "beginningWeight": 12.6,
     "minRolls": 1
   },
   {
-    "id": "QR-00209",
+    "id": "QR-00210",
     "category": "NYLON",
     "product": "120mm (05/28/14)",
     "gauge": "20",
@@ -2505,10 +2935,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 12.4,
     "currentRolls": 3.0,
     "currentWeight": 37.2,
+    "beginningRolls": 3.0,
+    "beginningWeight": 37.2,
     "minRolls": 1
   },
   {
-    "id": "QR-00210",
+    "id": "QR-00211",
     "category": "NYLON",
     "product": "70mm (06/24/19)",
     "gauge": "23",
@@ -2517,10 +2949,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 2.22,
+    "beginningRolls": 0.0,
+    "beginningWeight": 2.22,
     "minRolls": 1
   },
   {
-    "id": "QR-00211",
+    "id": "QR-00212",
     "category": "NYLON",
     "product": "110mm (12/11/17)",
     "gauge": "25",
@@ -2529,10 +2963,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 7.5333,
     "currentRolls": 21.0,
     "currentWeight": 158.2,
+    "beginningRolls": 21.0,
+    "beginningWeight": 158.2,
     "minRolls": 1
   },
   {
-    "id": "QR-00212",
+    "id": "QR-00213",
     "category": "NYLON",
     "product": "115mm (09/30/15)",
     "gauge": "25",
@@ -2541,10 +2977,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 12.2,
     "currentRolls": 3.0,
     "currentWeight": 36.6,
+    "beginningRolls": 3.0,
+    "beginningWeight": 36.6,
     "minRolls": 1
   },
   {
-    "id": "QR-00213",
+    "id": "QR-00214",
     "category": "NYLON",
     "product": "115mm (03/02/16)",
     "gauge": "25",
@@ -2553,10 +2991,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 7.8,
     "currentRolls": 2.0,
     "currentWeight": 15.6,
+    "beginningRolls": 2.0,
+    "beginningWeight": 15.6,
     "minRolls": 1
   },
   {
-    "id": "QR-00214",
+    "id": "QR-00215",
     "category": "NYLON",
     "product": "115mm (10/21/17)",
     "gauge": "25",
@@ -2565,10 +3005,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 15.0,
+    "beginningRolls": 0.0,
+    "beginningWeight": 15.0,
     "minRolls": 1
   },
   {
-    "id": "QR-00215",
+    "id": "QR-00216",
     "category": "NYLON",
     "product": "125mm (10/21/17)",
     "gauge": "25",
@@ -2577,10 +3019,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 2.85,
+    "beginningRolls": 0.0,
+    "beginningWeight": 2.85,
     "minRolls": 1
   },
   {
-    "id": "QR-00216",
+    "id": "QR-00217",
     "category": "NYLON",
     "product": "230mm (09/01/20)",
     "gauge": "30",
@@ -2589,10 +3033,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 0.0,
+    "beginningRolls": 0.0,
+    "beginningWeight": 0.0,
     "minRolls": 1
   },
   {
-    "id": "QR-00217",
+    "id": "QR-00218",
     "category": "NYLON",
     "product": "180mm(6/9/14)",
     "gauge": "25",
@@ -2601,10 +3047,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 15.1714,
     "currentRolls": 7.0,
     "currentWeight": 106.2,
+    "beginningRolls": 7.0,
+    "beginningWeight": 106.2,
     "minRolls": 1
   },
   {
-    "id": "QR-00218",
+    "id": "QR-00219",
     "category": "NYLON",
     "product": "180mm(11/03/14)",
     "gauge": "30",
@@ -2613,10 +3061,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 14.8346,
     "currentRolls": 13.0,
     "currentWeight": 192.85,
+    "beginningRolls": 13.0,
+    "beginningWeight": 192.85,
     "minRolls": 1
   },
   {
-    "id": "QR-00219",
+    "id": "QR-00220",
     "category": "NYLON",
     "product": "165mm(04/28/18)",
     "gauge": "25",
@@ -2625,10 +3075,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 14.7329,
     "currentRolls": 14.0,
     "currentWeight": 206.26,
+    "beginningRolls": 14.0,
+    "beginningWeight": 206.26,
     "minRolls": 1
   },
   {
-    "id": "QR-00220",
+    "id": "QR-00221",
     "category": "NYLON",
     "product": "25mm(11/12/22)",
     "gauge": "25",
@@ -2637,10 +3089,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 1.5333,
     "currentRolls": 6.0,
     "currentWeight": 9.2,
+    "beginningRolls": 6.0,
+    "beginningWeight": 9.2,
     "minRolls": 1
   },
   {
-    "id": "QR-00221",
+    "id": "QR-00222",
     "category": "NYLON",
     "product": "55mm (11/06/19)",
     "gauge": "12",
@@ -2649,10 +3103,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 12.15,
+    "beginningRolls": 0.0,
+    "beginningWeight": 12.15,
     "minRolls": 1
   },
   {
-    "id": "QR-00222",
+    "id": "QR-00223",
     "category": "NYLON",
     "product": "265mm (8/17/16)",
     "gauge": "12",
@@ -2661,10 +3117,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 28.0,
     "currentRolls": 2.0,
     "currentWeight": 56.0,
+    "beginningRolls": 2.0,
+    "beginningWeight": 56.0,
     "minRolls": 1
   },
   {
-    "id": "QR-00223",
+    "id": "QR-00224",
     "category": "NYLON",
     "product": "265mm (8/17/16)",
     "gauge": "12",
@@ -2673,10 +3131,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 33.0,
     "currentRolls": 1.0,
     "currentWeight": 33.0,
+    "beginningRolls": 1.0,
+    "beginningWeight": 33.0,
     "minRolls": 1
   },
   {
-    "id": "QR-00224",
+    "id": "QR-00225",
     "category": "NYLON",
     "product": "270mm (6/17/14)",
     "gauge": "12",
@@ -2685,10 +3145,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 32.6,
     "currentRolls": 1.0,
     "currentWeight": 32.6,
+    "beginningRolls": 1.0,
+    "beginningWeight": 32.6,
     "minRolls": 1
   },
   {
-    "id": "QR-00225",
+    "id": "QR-00226",
     "category": "NYLON",
     "product": "100mm (08/17/19)",
     "gauge": "12",
@@ -2697,10 +3159,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 13.75,
     "currentRolls": 2.0,
     "currentWeight": 27.5,
+    "beginningRolls": 2.0,
+    "beginningWeight": 27.5,
     "minRolls": 1
   },
   {
-    "id": "QR-00226",
+    "id": "QR-00227",
     "category": "NYLON",
     "product": "105mm (11/07/19)",
     "gauge": "12",
@@ -2709,10 +3173,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 10.8929,
     "currentRolls": 7.0,
     "currentWeight": 76.25,
+    "beginningRolls": 7.0,
+    "beginningWeight": 76.25,
     "minRolls": 1
   },
   {
-    "id": "QR-00227",
+    "id": "QR-00228",
     "category": "NYLON",
     "product": "105mm (11/12/19)",
     "gauge": "12",
@@ -2721,10 +3187,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 10.7333,
     "currentRolls": 3.0,
     "currentWeight": 32.2,
+    "beginningRolls": 3.0,
+    "beginningWeight": 32.2,
     "minRolls": 1
   },
   {
-    "id": "QR-00228",
+    "id": "QR-00229",
     "category": "NYLON",
     "product": "115mm (8/27/15)",
     "gauge": "12",
@@ -2733,10 +3201,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 15.45,
     "currentRolls": 2.0,
     "currentWeight": 30.9,
+    "beginningRolls": 2.0,
+    "beginningWeight": 30.9,
     "minRolls": 1
   },
   {
-    "id": "QR-00229",
+    "id": "QR-00230",
     "category": "NYLON",
     "product": "166mm (11/06/19)",
     "gauge": "12",
@@ -2745,10 +3215,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 19.6,
     "currentRolls": 2.0,
     "currentWeight": 39.2,
+    "beginningRolls": 2.0,
+    "beginningWeight": 39.2,
     "minRolls": 1
   },
   {
-    "id": "QR-00230",
+    "id": "QR-00231",
     "category": "NYLON",
     "product": "105mm (02/15/22)",
     "gauge": "12",
@@ -2757,10 +3229,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 7.85,
+    "beginningRolls": 0.0,
+    "beginningWeight": 7.85,
     "minRolls": 1
   },
   {
-    "id": "QR-00231",
+    "id": "QR-00232",
     "category": "NYLON",
     "product": "150mm (07/25/17)",
     "gauge": "30",
@@ -2769,10 +3243,12 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 17.6538,
     "currentRolls": 39.0,
     "currentWeight": 688.5,
+    "beginningRolls": 39.0,
+    "beginningWeight": 688.5,
     "minRolls": 1
   },
   {
-    "id": "QR-00232",
+    "id": "QR-00233",
     "category": "NYLON",
     "product": "328mm (08/16/17)",
     "gauge": "30",
@@ -2781,6 +3257,8 @@ window.STARTER_ITEMS = [
     "weightPerRoll": 0,
     "currentRolls": 0.0,
     "currentWeight": 24.1,
+    "beginningRolls": 0.0,
+    "beginningWeight": 24.1,
     "minRolls": 1
   }
 ];
