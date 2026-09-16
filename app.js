@@ -45,7 +45,7 @@ function loadState() {
 
   return {
     items: (window.STARTER_ITEMS || []).map((item) => normalizeItemShape(item)),
-    transactions: [],
+    transactions: (window.STARTER_TRANSACTIONS || []),
     closedWeeks: [],
     nextItemNumber: (window.STARTER_ITEMS || []).length + 1
   };
@@ -611,6 +611,25 @@ function findJobOrder(value) {
   return jobOrders().find((job) => String(job.joNo || '').toUpperCase() === key) || null;
 }
 
+function jobOrderSummary(value) {
+  const job = findJobOrder(value);
+  if (!job) return '';
+  return [
+    `Customer: ${job.customer || '-'}`,
+    `Particulars: ${job.particulars || '-'}`,
+    `Size: ${job.size || '-'}`
+  ].join(' | ');
+}
+
+function updateJobOrderPreview() {
+  const input = el('issuedForInput');
+  const preview = el('jobOrderPreview');
+  if (!input || !preview) return;
+  const summary = jobOrderSummary(input.value);
+  preview.textContent = summary || 'No matching job order yet.';
+  preview.classList.toggle('matched', Boolean(summary));
+}
+
 function reportCategoryTotalRow(category, total) {
   return `<tr class="total-row">
     <td></td>
@@ -851,14 +870,16 @@ function renderScanResult() {
     <div class="action-form">
       <label>Rolls<input id="actionRolls" type="number" min="1" step="1" value="1"></label>
       <label>Scanned By<input id="actionUser" placeholder="Name or initials" value="${escapeHtml(getStaffName())}"></label>
-      <label class="wide">Issued For / Job Order<input id="issuedForInput" list="jobOrderOptions" placeholder="Example: 026-A-010"></label>
+      <label class="wide">Issued For / Job Order<input id="issuedForInput" list="jobOrderOptions" placeholder="Example: 026-A-010"><small id="jobOrderPreview" class="field-note">No matching job order yet.</small></label>
       <button class="primary" id="postInBtn">Delivery</button>
       <button class="danger" id="postOutBtn">Issuance</button>
     </div>
   `;
 
+  document.getElementById('issuedForInput').addEventListener('input', updateJobOrderPreview);
   document.getElementById('postInBtn').addEventListener('click', () => postTransaction('IN'));
   document.getElementById('postOutBtn').addEventListener('click', () => postTransaction('OUT'));
+  updateJobOrderPreview();
 }
 
 function postTransaction(action) {
@@ -880,10 +901,15 @@ function postTransaction(action) {
     issuedFor = prompt('Issued for / Job Order?', jobOrders()[0]?.joNo || '026-A-010')?.trim() || '';
     if (issuedFor) {
       document.getElementById('issuedForInput').value = issuedFor;
+      updateJobOrderPreview();
     } else {
       toast('Enter Issued For / Job Order before posting issuance.');
       return;
     }
+  }
+  const matchedJob = findJobOrder(issuedFor);
+  if (matchedJob) {
+    issuedFor = matchedJob.joNo;
   }
 
   const weightPerRoll = Number(selectedItem.weightPerRoll || 0);
@@ -1435,6 +1461,8 @@ function fromDbItem(row) {
     weightPerRoll: Number(row.weight_per_roll || 0),
     currentRolls: Number(row.current_rolls || 0),
     currentWeight: Number(row.current_weight || 0),
+    beginningRolls: Number(row.beginning_rolls ?? row.current_rolls ?? 0),
+    beginningWeight: Number(row.beginning_weight ?? row.current_weight ?? 0),
     minRolls: Number(row.min_rolls || 1)
   });
 }
