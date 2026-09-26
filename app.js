@@ -38,7 +38,12 @@ function loadState() {
   const saved = localStorage.getItem(STORE_KEY);
   if (saved) {
     try {
-      return JSON.parse(saved);
+      const parsed = JSON.parse(saved);
+      parsed.transactions = (parsed.transactions || []).map((tx) => ({
+        ...tx,
+        localId: tx.localId || createLocalTransactionId()
+      }));
+      return parsed;
     } catch {
       localStorage.removeItem(STORE_KEY);
     }
@@ -46,10 +51,17 @@ function loadState() {
 
   return {
     items: (window.STARTER_ITEMS || []).map((item) => normalizeItemShape(item)),
-    transactions: (window.STARTER_TRANSACTIONS || []),
+    transactions: (window.STARTER_TRANSACTIONS || []).map((tx) => ({
+      ...tx,
+      localId: tx.localId || createLocalTransactionId()
+    })),
     closedWeeks: [],
     nextItemNumber: (window.STARTER_ITEMS || []).length + 1
   };
+}
+
+function createLocalTransactionId() {
+  return window.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 }
 
 function saveState() {
@@ -129,6 +141,14 @@ async function cloudPatch(table, idColumn, idValue, row) {
       Prefer: 'return=representation'
     },
     body: JSON.stringify(row)
+  });
+  return readCloudResponse(response);
+}
+
+async function cloudDelete(table, idColumn, idValue) {
+  const response = await fetch(`${SUPABASE.url}/rest/v1/${table}?${idColumn}=eq.${encodeURIComponent(idValue)}`, {
+    method: 'DELETE',
+    headers: { ...cloudHeaders(), Prefer: 'return=representation' }
   });
   return readCloudResponse(response);
 }
@@ -447,6 +467,7 @@ function renderTransactions() {
 
   el('transactionRows').innerHTML = rows.map((tx) => {
     const item = state.items.find((row) => row.id === tx.itemId) || {};
+    const isLatestForItem = state.transactions.findLastIndex((other) => other.itemId === tx.itemId) === state.transactions.indexOf(tx);
     return `<tr>
       <td>${formatDate(tx.timestamp)}</td>
       <td>${escapeHtml(palletQrIdFor(item))}</td>
@@ -458,8 +479,56 @@ function renderTransactions() {
       <td>${formatNumber(tx.balanceAfter, 0)}</td>
       <td>${escapeHtml(tx.issuedFor || '')}</td>
       <td>${escapeHtml(tx.user || '')}</td>
+      <td>${isLatestForItem ? `<button class="danger void-transaction-btn" data-tx-id="${escapeHtml(tx.localId)}" title="Void this latest transaction">Void</button>` : ''}</td>
     </tr>`;
-  }).join('') || `<tr><td colspan="10">No transactions yet.</td></tr>`;
+  }).join('') || `<tr><td colspan="11">No transactions yet.</td></tr>`;
+  el('transactionRows').querySelectorAll('.void-transaction-btn').forEach((button) => {
+    button.addEventListener('click', () => voidTransaction(button.dataset.txId));
+  });
+}
+
+async function voidTransaction(localId) {
+  const index = state.transactions.findIndex((tx) => tx.localId === localId);
+  if (index < 0) return;
+  const tx = state.transactions[index];
+  const hasLaterMovement = state.transactions.findLastIndex((other) => other.itemId === tx.itemId) !== index;
+  if (hasLaterMovement) {
+    toast('This is no longer the latest movement for that QR and cannot be voided.');
+    return;
+  }
+  if (!confirm(`Permanently void this ${tx.action === 'IN' ? 'Delivery' : 'Issuance'} of ${tx.rolls} roll(s) for ${tx.itemId}? The stock balance will be recalculated. This cannot be undone.`)) return;
+
+  if (cloudEnabled) {
+    if (tx.dbId != null) {
+      try {
+        await cloudDelete('transactions', 'id', tx.dbId);
+      } catch (error) {
+        toast(`Could not void online transaction: ${error.message}`);
+        return;
+      }
+    }
+  }
+
+  state.transactions.splice(index, 1);
+  const item = state.items.find((row) => row.id === tx.itemId);
+  if (item) {
+    const movement = getItemMovement(item.id);
+    item.currentRolls = Number(item.beginningRolls || 0) + movement.inRolls - movement.outRolls;
+    item.currentWeight = Math.max(0, Number(item.beginningWeight || 0) + movement.inWeight - movement.outWeight);
+    if (cloudEnabled) {
+      try {
+        await cloudPatch('items', 'id', item.id, {
+          current_rolls: item.currentRolls,
+          current_weight: item.currentWeight
+        });
+      } catch (error) {
+        toast(`Transaction voided, but item balance sync failed: ${error.message}`);
+      }
+    }
+  }
+  saveState();
+  renderAll();
+  toast('Transaction voided and stock recalculated.');
 }
 
 function initializeReportDates() {
@@ -965,6 +1034,7 @@ function postTransaction(action) {
   selectedItem.currentWeight = Math.max(0, Number(selectedItem.currentWeight || 0) + signedWeight);
 
   state.transactions.push({
+    localId: createLocalTransactionId(),
     timestamp: new Date().toISOString(),
     itemId: selectedItem.id,
     product: selectedItem.product,
@@ -993,18 +1063,21 @@ async function syncTransactionToCloud(item, transaction) {
   if (!cloudEnabled) return;
   try {
     try {
-      await cloudInsert('transactions', [toDbTransaction(transaction)]);
+      const inserted = await cloudInsert('transactions', [toDbTransaction(transaction)]);
+      transaction.dbId = inserted[0]?.id;
     } catch (error) {
       if (!String(error.message || error).toLowerCase().includes('issued_for')) throw error;
       const row = toDbTransaction(transaction);
       delete row.issued_for;
-      await cloudInsert('transactions', [row]);
+      const inserted = await cloudInsert('transactions', [row]);
+      transaction.dbId = inserted[0]?.id;
       toast('Saved online without Issued For. Add the issued_for column in Supabase to sync this field.');
     }
     await cloudPatch('items', 'id', item.id, {
       current_rolls: item.currentRolls,
       current_weight: item.currentWeight
     });
+    saveState();
     setSyncStatus('Online database connected', 'online');
   } catch (error) {
     setSyncStatus('Sync error', 'offline');
@@ -1114,6 +1187,7 @@ async function saveNewItem(event) {
   item.currentRolls = currentRolls;
   item.currentWeight = totalWeight;
   const transaction = {
+    localId: createLocalTransactionId(),
     timestamp: new Date().toISOString(),
     itemId: item.id,
     product: item.product,
@@ -1583,7 +1657,10 @@ function resetLocalData() {
   localStorage.removeItem(STORE_KEY);
   const fresh = loadState();
   state.items = fresh.items;
-  state.transactions = fresh.transactions;
+  state.transactions = fresh.transactions.map((tx) => ({
+    ...tx,
+    localId: tx.localId || createLocalTransactionId()
+  }));
   state.nextItemNumber = fresh.nextItemNumber;
   saveState();
   renderAll();
@@ -1688,6 +1765,8 @@ function toDbTransaction(tx) {
 function fromDbTransaction(row) {
   const item = state.items.find((candidate) => candidate.id === row.item_id) || {};
   return {
+    localId: String(row.id ?? createLocalTransactionId()),
+    dbId: row.id,
     timestamp: row.created_at,
     itemId: row.item_id,
     product: item.product || '',
