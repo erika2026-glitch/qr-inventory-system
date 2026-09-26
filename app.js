@@ -19,6 +19,7 @@ const viewMeta = {
 let selectedItem = null;
 let selectedRollQrId = '';
 let selectedRollWeight = null;
+let selectedIncomingLabel = null;
 let scanStream = null;
 let scanTimer = null;
 let scanAnimation = null;
@@ -31,10 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindNavigation();
   bindActions();
   await initCloud();
-  palletLabelEntries = (state.rollLabels || []).map((label) => ({
-    ...label,
-    item: state.items.find((item) => item.id === label.itemId)
-  })).filter((label) => label.item);
+  palletLabelEntries = (state.rollLabels || []).map((label) => ({ ...label }));
   if (!palletLabelEntries.length) palletLabelEntries = null;
   applyHashScan();
   renderAll();
@@ -541,6 +539,45 @@ async function voidTransaction(localId) {
   toast('Transaction voided and stock recalculated.');
 }
 
+async function receiveIncomingRoll() {
+  if (!selectedIncomingLabel) return;
+  const label = selectedIncomingLabel;
+  let item = selectedItem || findMasterForIncoming(label);
+  if (!item) {
+    item = normalizeItemShape({
+      id: `QR-${String(state.nextItemNumber || nextItemNumberFromItems(state.items)).padStart(5, '0')}`,
+      category: label.category,
+      product: label.product,
+      gauge: label.gauge,
+      meters: label.meters,
+      remarks: label.remarks,
+      weightPerRoll: label.weightPerRoll,
+      beginningRolls: 0,
+      beginningWeight: 0,
+      currentRolls: 0,
+      currentWeight: 0,
+      minRolls: 1
+    });
+    state.nextItemNumber = Number(item.id.match(/\d+$/)?.[0] || 0) + 1;
+    state.items.push(item);
+    await syncNewItemToCloud(item);
+  }
+
+  const savedLabelIndex = (state.rollLabels || []).findIndex((row) => row.qrId === label.qrId);
+  const savedLabel = { ...label, itemId: item.id, delivered: true };
+  if (savedLabelIndex >= 0) state.rollLabels[savedLabelIndex] = savedLabel;
+  else state.rollLabels.push(savedLabel);
+  selectedItem = item;
+  selectedRollQrId = label.qrId;
+  selectedRollWeight = Number(label.weightPerRoll);
+  selectedIncomingLabel = null;
+  saveState();
+  renderScanResult();
+  const userField = document.getElementById('actionUser');
+  if (userField) userField.value = document.getElementById('incomingDeliveryUser')?.value.trim() || getStaffName();
+  postTransaction('IN');
+}
+
 function initializeReportDates() {
   const today = new Date();
   const start = new Date(today);
@@ -901,20 +938,28 @@ function renderLabels() {
   const query = el('labelSearch').value.trim().toLowerCase();
   if (palletLabelEntries) {
     const labels = palletLabelEntries.filter((label) => {
-      const item = state.items.find((row) => row.id === label.itemId) || label.item;
-      if (!item) return false;
-      label.item = item;
-      const searchable = [label.qrId, item.id, item.category, item.product, item.gauge, item.meters, label.palletNo, label.rollNumber].join(' ').toLowerCase();
+      const searchable = [label.qrId, label.itemId, label.category, label.product, label.gauge, label.meters, label.palletNo, label.rollNumber].join(' ').toLowerCase();
       return !query || searchable.includes(query);
     });
     el('labelGrid').innerHTML = labels.map((label) => {
-      const item = label.item;
-      const payload = (window.APP_BASE_URL || (location.origin + location.pathname)) + '#scan:' + encodeURIComponent(item.id + '|roll=' + label.qrId + '|weight=' + label.weightPerRoll);
+      const payloadData = {
+        qrId: label.qrId,
+        itemId: label.itemId || '',
+        category: label.category,
+        product: label.product,
+        gauge: label.gauge,
+        meters: label.meters,
+        remarks: label.remarks,
+        weightPerRoll: label.weightPerRoll,
+        palletNo: label.palletNo,
+        rollNumber: label.rollNumber,
+        totalRolls: label.totalRolls
+      };
+      const payload = (window.APP_BASE_URL || (location.origin + location.pathname)) + '#incoming:' + encodeURIComponent(JSON.stringify(payloadData));
       const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(payload);
       return '<div class="qr-label"><img src="' + qrUrl + '" alt="QR for ' + escapeHtml(label.qrId) + '"><div>' +
         '<strong>' + escapeHtml(label.qrId) + '</strong>' +
-        '<span>Inventory item: ' + escapeHtml(item.id) + '</span>' +
-        '<span>' + escapeHtml(item.category + ' · ' + item.product + ' · ' + item.gauge + ' · ' + item.meters + 'm') + '</span>' +
+        '<span>' + escapeHtml(label.category + ' · ' + label.product + ' · ' + label.gauge + ' · ' + label.meters + 'm') + '</span>' +
         '<span>Pallet ' + escapeHtml(label.palletNo) + ' · Roll ' + label.rollNumber + ' of ' + label.totalRolls + '</span>' +
         '<span>Estimated ' + formatNumber(label.weightPerRoll, 2) + ' kg/roll</span>' +
         '</div></div>';
@@ -955,7 +1000,10 @@ function selectScanValue(rawValue) {
 
   const scanDetails = qrScanDetails(value);
   const item = findItem(value);
-  if (!item) {
+  selectedRollQrId = scanDetails.rollQrId;
+  selectedRollWeight = scanDetails.weightPerRoll;
+  selectedIncomingLabel = scanDetails.incomingLabel;
+  if (!item && !selectedIncomingLabel) {
     selectedItem = null;
     renderScanResult();
     toast('QR not found in inventory.');
@@ -963,14 +1011,24 @@ function selectScanValue(rawValue) {
   }
 
   selectedItem = item;
-  selectedRollQrId = scanDetails.rollQrId;
-  selectedRollWeight = scanDetails.weightPerRoll;
-  el('scanInput').value = selectedRollQrId || item.id;
+  el('scanInput').value = selectedRollQrId || item?.id || selectedIncomingLabel.qrId;
   renderScanResult();
 }
 
 function qrScanDetails(value) {
   const decoded = decodeURIComponent(String(value || '').trim());
+  const incoming = decoded.match(/#incoming:(.+)$/);
+  if (incoming) {
+    const metadata = JSON.parse(incoming[1]);
+    const savedLabel = state.rollLabels?.find((label) => label.qrId === metadata.qrId);
+    const merged = { ...metadata, ...savedLabel, qrId: metadata.qrId };
+    return {
+      itemId: merged.itemId || findMasterForIncoming(merged)?.id || '',
+      rollQrId: merged.qrId,
+      weightPerRoll: Number(merged.weightPerRoll),
+      incomingLabel: merged.delivered ? null : merged
+    };
+  }
   const hash = decoded.match(/#scan:([^#]+)/);
   const queryId = decoded.match(/(?:^|[?&])id=([^&#]+)/);
   const token = hash ? hash[1] : queryId ? queryId[1] : decoded;
@@ -981,19 +1039,48 @@ function qrScanDetails(value) {
   return {
     itemId: parts.find((part) => part.startsWith('item='))?.slice(5) || savedLabel?.itemId || tokenId,
     rollQrId: parts.find((part) => part.startsWith('roll='))?.slice(5) || savedLabel?.qrId || '',
-    weightPerRoll: weightText == null ? (savedLabel ? Number(savedLabel.weightPerRoll) : null) : Number(weightText)
+    weightPerRoll: weightText == null ? (savedLabel ? Number(savedLabel.weightPerRoll) : null) : Number(weightText),
+    incomingLabel: savedLabel || null
   };
 }
 
 function findItem(value) {
-  const normalized = qrScanDetails(value).itemId.trim();
+  const details = qrScanDetails(value);
+  const normalized = details.itemId.trim();
+  if (!normalized && details.incomingLabel) return findMasterForIncoming(details.incomingLabel);
 
   return activeItems().find((item) => item.id.toLowerCase() === normalized.toLowerCase())
     || activeItems().find((item) => legacyQrText(item).toLowerCase() === normalized.toLowerCase());
 }
 
+function findMasterForIncoming(label) {
+  const width = String(label.product || '').match(/^\s*([\d.]+)\s*mm\b/i)?.[1];
+  return activeItems().filter((item) => {
+    const itemWidth = String(item.product || '').match(/^\s*([\d.]+)\s*mm\b/i)?.[1];
+    return String(item.category).toLowerCase() === String(label.category).toLowerCase() &&
+      Number(itemWidth) === Number(width) && Number(item.gauge) === Number(label.gauge) &&
+      Number(String(item.meters).replace(/,/g, '')) === Number(label.meters);
+  }).sort((a, b) => Number(a.id.match(/\d+/)?.[0] || 0) - Number(b.id.match(/\d+/)?.[0] || 0))[0] || null;
+}
+
 function renderScanResult() {
   const panel = el('scanResult');
+  if (selectedIncomingLabel && !selectedIncomingLabel.delivered) {
+    panel.className = 'item-panel';
+    panel.innerHTML = `<h2>${escapeHtml(selectedIncomingLabel.product)} incoming roll</h2>
+      <p>${escapeHtml(selectedIncomingLabel.category)} · Roll QR ${escapeHtml(selectedIncomingLabel.qrId)} · Not yet received</p>
+      <div class="item-detail">
+        <div class="detail-box"><span>Inventory Match</span><strong>${selectedItem ? escapeHtml(selectedItem.id) : 'Will create item on delivery'}</strong></div>
+        <div class="detail-box"><span>Gauge</span><strong>${escapeHtml(selectedIncomingLabel.gauge)}</strong></div>
+        <div class="detail-box"><span>Meters/Roll</span><strong>${escapeHtml(selectedIncomingLabel.meters)}</strong></div>
+        <div class="detail-box"><span>Pallet / Roll</span><strong>${escapeHtml(selectedIncomingLabel.palletNo)} / ${selectedIncomingLabel.rollNumber}</strong></div>
+        <div class="detail-box"><span>Estimated Weight/Roll</span><strong>${formatNumber(selectedIncomingLabel.weightPerRoll, 2)} kg</strong></div>
+      </div>
+      <div class="action-form"><label>Scanned By<input id="incomingDeliveryUser" value="${escapeHtml(getStaffName())}" placeholder="Name or initials"></label>
+        <button class="primary" id="receiveIncomingRollBtn">Delivery</button></div>`;
+    document.getElementById('receiveIncomingRollBtn').addEventListener('click', receiveIncomingRoll);
+    return;
+  }
   if (!selectedItem) {
     panel.className = 'item-panel empty';
     panel.innerHTML = '<div><h2>No item selected</h2><p>Scan or enter a QR ID to begin.</p></div>';
@@ -1331,7 +1418,7 @@ function importItemsCsv(event) {
         const approved = confirm(
           `Prepare ${totalRolls} roll labels from ${receipts.sourceLineCount} pallet size rows?\n\n` +
           `${totalRolls} rolls\n${formatNumber(totalWeight, 2)} kg total\n\n` +
-          'Each roll gets a unique QR label linked to its matching inventory item; no inventory row is created per roll. This does NOT add stock. When rolls arrive, scan the roll QR and choose Delivery. Weights are estimated averages; individual batch numbers are not in this file.'
+          'This creates QR labels only; it does NOT create inventory items or add stock. When a roll arrives, scan its label and choose Delivery. It will go to a matching category/size item, or create one item then if none exists. Weights are estimated averages; individual batch numbers are not in this file.'
         );
         if (!approved) return;
 
@@ -1451,51 +1538,39 @@ function rowsToPalletReceipts(rows) {
   const palletRollCounters = new Map();
 
   entries.forEach((entry) => {
-    const sizeKey = [entry.category, entry.width, entry.gauge, entry.meters].join('|').toLowerCase();
-    let master = items.find((item) => item._sizeKey === sizeKey) || state.items.filter((item) => {
+    const master = state.items.filter((item) => {
       const itemWidth = String(item.product || '').match(/^\s*([\d.]+)\s*mm\b/i)?.[1];
       return item.category.toLowerCase() === entry.category.toLowerCase() &&
         Number(itemWidth) === Number(entry.width) &&
         Number(item.gauge) === Number(entry.gauge) &&
         Number(String(item.meters).replace(/,/g, '')) === Number(entry.meters);
     }).sort((a, b) => Number(a.id.match(/\d+/)?.[0] || 0) - Number(b.id.match(/\d+/)?.[0] || 0))[0];
-    if (!master) {
-      master = normalizeItemShape({
-        id: 'QR-' + String(nextNumber++).padStart(5, '0'),
+    for (let index = 0; index < entry.rolls; index++) {
+      const rollNumber = (palletRollCounters.get(entry.palletNo) || 0) + 1;
+      palletRollCounters.set(entry.palletNo, rollNumber);
+      const priorLabel = (state.rollLabels || []).find((label) =>
+        label.palletNo === entry.palletNo && label.rollNumber === rollNumber &&
+        String(label.category).toLowerCase() === entry.category.toLowerCase() &&
+        Number(String(label.product).match(/[\d.]+/)?.[0]) === Number(entry.width) &&
+        Number(label.gauge) === Number(entry.gauge) && Number(label.meters) === Number(entry.meters) &&
+        Number(label.weightPerRoll) === Number(entry.weightPerRoll)
+      );
+      labels.push({
+        itemId: master?.id || '',
+        qrId: priorLabel?.qrId || 'QR-' + String(nextNumber++).padStart(5, '0'),
+        palletNo: entry.palletNo,
+        rollNumber,
+        totalRolls: palletRollTotals.get(entry.palletNo),
+        weightPerRoll: entry.weightPerRoll,
         category: entry.category,
         product: entry.width + 'mm',
         gauge: entry.gauge,
         meters: entry.meters,
         remarks: entry.typeRemark,
-        weightPerRoll: entry.weightPerRoll,
-        beginningRolls: 0,
-        beginningWeight: 0,
-        currentRolls: 0,
-        currentWeight: 0,
-        minRolls: 1
-      });
-      master._sizeKey = sizeKey;
-      items.push(master);
-    }
-    for (let index = 0; index < entry.rolls; index++) {
-      const rollNumber = (palletRollCounters.get(entry.palletNo) || 0) + 1;
-      palletRollCounters.set(entry.palletNo, rollNumber);
-      const priorLabel = (state.rollLabels || []).find((label) =>
-        label.palletNo === entry.palletNo && label.rollNumber === rollNumber && label.itemId === master.id &&
-        Number(label.weightPerRoll) === Number(entry.weightPerRoll)
-      );
-      labels.push({
-        item: master,
-        itemId: master.id,
-        qrId: priorLabel?.qrId || 'QR-' + String(nextNumber++).padStart(5, '0'),
-        palletNo: entry.palletNo,
-        rollNumber,
-        totalRolls: palletRollTotals.get(entry.palletNo),
-        weightPerRoll: entry.weightPerRoll
+        delivered: false
       });
     }
   });
-  items.forEach((item) => delete item._sizeKey);
   return { items, labels, nextNumber, sourceLineCount: entries.length };
 }
 
@@ -1761,10 +1836,10 @@ async function retryCloudConnection() {
 }
 
 function applyHashScan() {
-  const match = location.hash.match(/^#scan:(.+)$/);
+  const match = location.hash.match(/^#(?:scan|incoming):(.+)$/);
   if (!match) return;
   showView('scan');
-  selectScanValue('#scan:' + match[1]);
+  selectScanValue(location.hash);
 }
 
 function legacyQrText(item) {
