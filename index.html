@@ -105,7 +105,7 @@
             <input id="inventorySearch" placeholder="Search product, remarks, QR ID">
             <select id="categoryFilter"><option value="">All categories</option></select>
           </div>
-          <button id="addItemBtn" class="primary">Add Item</button>
+          <button id="addItemBtn" class="primary">Receive New Roll</button>
         </div>
         <div class="table-wrap">
           <table>
@@ -285,11 +285,11 @@
             </label>
           </div>
           <div class="settings-panel">
-            <h2>Import Items</h2>
-            <p>Add many new inventory items from an Excel or CSV file. QR IDs will be created automatically.</p>
+            <h2>Import Items / Pallet List</h2>
+            <p>Upload an inventory file or incoming pallet list. Each roll gets its own QR ID and delivery record.</p>
             <button id="downloadItemTemplateBtn" class="secondary">Download CSV Template</button>
             <label class="file-label">
-              Upload Items File
+              Upload Items or Pallet List
               <input id="itemImportInput" type="file" accept=".xlsx,.xls,.csv,text/csv">
             </label>
           </div>
@@ -304,19 +304,19 @@
 
     <dialog id="itemDialog">
       <form method="dialog" id="itemForm">
-        <h2>Add Item</h2>
+        <h2>Receive New Roll</h2>
+        <p class="dialog-note">Create a unique QR label for this roll. It will be recorded as a delivery.</p>
         <div class="form-grid">
           <label>Category<input name="category" required></label>
           <label>Product<input name="product" required></label>
           <label>Gauge<input name="gauge"></label>
           <label>Meters/Roll<input name="meters"></label>
           <label>Remarks<input name="remarks"></label>
-          <label>Weight/Roll<input name="weightPerRoll" type="number" step="0.01" min="0"></label>
-          <label>Beginning Rolls<input name="currentRolls" type="number" step="1" min="0" value="0"></label>
+          <label>Weight/Roll (kg)<input name="weightPerRoll" type="number" step="0.01" min="0.01" required></label>
         </div>
         <div class="dialog-actions">
           <button type="button" id="cancelItemBtn" class="secondary">Cancel</button>
-          <button type="submit" class="primary">Save Item</button>
+          <button type="submit" class="primary">Create QR &amp; Print Label</button>
         </div>
       </form>
     </dialog>
