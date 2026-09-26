@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindNavigation();
   bindActions();
   await initCloud();
+  registerLegacyPalletQrAliases();
   palletLabelEntries = (state.rollLabels || []).map((label) => ({ ...label }));
   if (!palletLabelEntries.length) palletLabelEntries = null;
   applyHashScan();
@@ -286,8 +287,14 @@ function renderJobOrderOptions() {
 
 function renderDashboard() {
   const items = activeItems();
-  const totalRolls = items.reduce((sum, item) => sum + Number(item.currentRolls || 0), 0);
-  const totalWeight = items.reduce((sum, item) => sum + Number(item.currentWeight || 0), 0);
+  const totalRolls = items.reduce((sum, item) => {
+    const movement = getItemMovement(item.id);
+    return sum + Number(item.beginningRolls || 0) + movement.inRolls - movement.outRolls;
+  }, 0);
+  const totalWeight = items.reduce((sum, item) => {
+    const movement = getItemMovement(item.id);
+    return sum + Math.max(0, Number(item.beginningWeight || 0) + movement.inWeight - movement.outWeight);
+  }, 0);
   const today = new Date().toISOString().slice(0, 10);
   const todayCount = state.transactions.filter((tx) => tx.timestamp.slice(0, 10) === today).length;
 
@@ -356,7 +363,7 @@ function renderInventory() {
 
 function getItemMovement(itemId) {
   return state.transactions
-    .filter((tx) => tx.itemId === itemId)
+    .filter((tx) => resolveInventoryItemId(tx.itemId) === itemId)
     .reduce((totals, tx) => {
       const rolls = Number(tx.rolls || 0);
       const weight = Number(tx.totalWeight || 0);
@@ -518,7 +525,7 @@ async function voidTransaction(localId) {
   }
 
   state.transactions.splice(index, 1);
-  const item = state.items.find((row) => row.id === tx.itemId);
+  const item = state.items.find((row) => row.id === resolveInventoryItemId(tx.itemId));
   if (item) {
     const movement = getItemMovement(item.id);
     item.currentRolls = Number(item.beginningRolls || 0) + movement.inRolls - movement.outRolls;
@@ -828,7 +835,7 @@ function buildWeeklySummary(from, to) {
   return activeItems().map((item) => {
     const periodTx = state.transactions.filter((tx) => {
       const txDate = new Date(tx.timestamp);
-      return tx.itemId === item.id && (!fromDate || txDate >= fromDate) && (!toDate || txDate <= toDate);
+      return resolveInventoryItemId(tx.itemId) === item.id && (!fromDate || txDate >= fromDate) && (!toDate || txDate <= toDate);
     });
     const totals = periodTx.reduce((sum, tx) => {
       const rolls = Number(tx.rolls || 0);
@@ -1061,6 +1068,12 @@ function findMasterForIncoming(label) {
       Number(itemWidth) === Number(width) && Number(item.gauge) === Number(label.gauge) &&
       Number(String(item.meters).replace(/,/g, '')) === Number(label.meters);
   }).sort((a, b) => Number(a.id.match(/\d+/)?.[0] || 0) - Number(b.id.match(/\d+/)?.[0] || 0))[0] || null;
+}
+
+function resolveInventoryItemId(itemId) {
+  const item = state.items.find((candidate) => candidate.id === itemId);
+  if (!item || !isLegacyPalletRollItem(item)) return itemId;
+  return findMasterForIncoming(item)?.id || itemId;
 }
 
 function renderScanResult() {
@@ -1847,7 +1860,48 @@ function legacyQrText(item) {
 }
 
 function activeItems() {
-  return state.items.filter((item) => !isImportedTotalRow(item));
+  return state.items.filter((item) => !isImportedTotalRow(item) && !isLegacyPalletRollItem(item));
+}
+
+function isLegacyPalletRollItem(item) {
+  return /^Pallet\s+.+\/\s*Roll\s+\d+\s+of\s+\d+/i.test(String(item.remarks || '').trim());
+}
+
+function registerLegacyPalletQrAliases() {
+  state.rollLabels = state.rollLabels || [];
+  let changed = false;
+  state.items.filter(isLegacyPalletRollItem).forEach((item) => {
+    const existing = state.rollLabels.find((label) => label.qrId === item.id);
+    const remark = String(item.remarks || '');
+    const match = remark.match(/^Pallet\s+(.+?)\s*\/\s*Roll\s+(\d+)\s+of\s+(\d+)(?:\s*\/\s*(.*))?$/i);
+    const master = findMasterForIncoming({
+      category: item.category,
+      product: item.product,
+      gauge: item.gauge,
+      meters: item.meters
+    });
+    const label = {
+      qrId: item.id,
+      itemId: master?.id || '',
+      palletNo: match?.[1] || '',
+      rollNumber: Number(match?.[2] || 1),
+      totalRolls: Number(match?.[3] || 1),
+      weightPerRoll: Number(item.weightPerRoll || 0),
+      category: item.category,
+      product: item.product,
+      gauge: item.gauge,
+      meters: item.meters,
+      remarks: match?.[4] || '',
+      delivered: state.transactions.some((tx) => tx.itemId === item.id)
+    };
+    if (existing) {
+      Object.assign(existing, label);
+    } else {
+      state.rollLabels.push(label);
+    }
+    changed = true;
+  });
+  if (changed) saveState();
 }
 
 function isImportedTotalRow(item) {
