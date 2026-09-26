@@ -836,7 +836,7 @@ function renderLabels() {
     const title = group.palletNo ? 'Pallet ' + group.palletNo : master.id;
     const contents = group.items.map((item) => {
       const type = String(item.remarks || '').split('|').pop().trim();
-      return '<span>' + escapeHtml(item.category + ' · ' + item.product + ' · ' + item.gauge + ' · ' + item.meters + 'm · ' + type + ' · ' + formatNumber(item.currentRolls, 0) + ' rolls · ' + formatNumber(item.currentWeight, 2) + ' kg') + '</span>';
+      return '<span>' + escapeHtml(item.category + ' · ' + item.product + ' · ' + item.gauge + ' · ' + item.meters + 'm · ' + type + ' · 1 roll · est. ' + formatNumber(item.weightPerRoll, 2) + ' kg') + '</span>';
     }).join('');
     return '<div class="qr-label"><img src="' + qrUrl + '" alt="QR for ' + escapeHtml(title) + '"><div>' +
       '<strong>' + escapeHtml(title) + '</strong>' +
@@ -1174,7 +1174,7 @@ async function syncPalletReceiptsToCloud(items, transactions) {
   if (!cloudEnabled) return;
   try {
     await cloudInsert('items', items.map(toDbItem));
-    await cloudInsert('transactions', transactions.map(toDbTransaction));
+    if (transactions.length) await cloudInsert('transactions', transactions.map(toDbTransaction));
     setSyncStatus('Online database connected', 'online');
   } catch (error) {
     setSyncStatus('Sync error', 'offline');
@@ -1205,12 +1205,12 @@ function importItemsCsv(event) {
         const receipts = rowsToPalletReceipts(rows);
         if (!receipts.items.length) throw new Error('No pallet rows with valid roll count and net weight were found.');
         const totalRolls = receipts.items.reduce((sum, item) => sum + item.currentRolls, 0);
-        const totalWeight = receipts.transactions.reduce((sum, tx) => sum + tx.totalWeight, 0);
+        const totalWeight = receipts.items.reduce((sum, item) => sum + item.weightPerRoll, 0);
         const qrLabels = palletLabelGroups(receipts.items);
         const approved = confirm(
-          `Create ${qrLabels.length} individual roll QR labels from ${receipts.sourceLineCount} pallet size rows?\n\n` +
+          `Prepare ${qrLabels.length} individual roll QR labels from ${receipts.sourceLineCount} pallet size rows?\n\n` +
           `${totalRolls} rolls\n${formatNumber(totalWeight, 2)} kg total\n\n` +
-          'Each QR represents one roll. This file has only pallet totals, so each roll gets an estimated average weight; individual batch numbers are not included. Uploading this same list again will duplicate the records.'
+          'This only prepares labels; it does NOT add stock or post deliveries. When each roll arrives, scan its QR and choose Delivery. The file has pallet totals only, so each roll gets an estimated average weight and no individual batch number. Uploading this same list again will create duplicate QR records.'
         );
         if (!approved) return;
 
@@ -1224,7 +1224,7 @@ function importItemsCsv(event) {
         labelPrintOnlyIds = qrLabels.map((group) => group.items[0].id);
         el('labelSearch').value = '';
         renderLabels();
-        toast(`Imported ${receipts.items.length} rolls as deliveries. Review and print their QR labels.`);
+        toast(`Prepared ${receipts.items.length} roll QR labels. Print them now; record Delivery when the rolls arrive.`);
         return;
       }
       const importedItems = rowsToImportItems(rows);
@@ -1325,7 +1325,6 @@ function rowsToPalletReceipts(rows) {
   const transactions = [];
   let nextNumber = state.nextItemNumber;
   const palletRollCounters = new Map();
-  const receivedAt = new Date().toISOString();
 
   entries.forEach((entry) => {
     for (let index = 0; index < entry.rolls; index++) {
@@ -1341,23 +1340,11 @@ function rowsToPalletReceipts(rows) {
         weightPerRoll: entry.weightPerRoll,
         beginningRolls: 0,
         beginningWeight: 0,
-        currentRolls: 1,
-        currentWeight: entry.weightPerRoll,
+        currentRolls: 0,
+        currentWeight: 0,
         minRolls: 1
       });
       items.push(item);
-      transactions.push({
-        timestamp: receivedAt,
-        itemId: item.id,
-        product: item.product,
-        action: 'IN',
-        rolls: 1,
-        weightPerRoll: entry.weightPerRoll,
-        totalWeight: entry.weightPerRoll,
-        balanceAfter: 1,
-        issuedFor: '',
-        user: getStaffName()
-      });
     }
   });
   return { items, transactions, sourceLineCount: entries.length };
