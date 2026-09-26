@@ -17,17 +17,25 @@ const viewMeta = {
 };
 
 let selectedItem = null;
+let selectedRollQrId = '';
+let selectedRollWeight = null;
 let scanStream = null;
 let scanTimer = null;
 let scanAnimation = null;
 let cloudEnabled = false;
 let cloudLastError = '';
 let labelPrintOnlyIds = null;
+let palletLabelEntries = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   bindNavigation();
   bindActions();
   await initCloud();
+  palletLabelEntries = (state.rollLabels || []).map((label) => ({
+    ...label,
+    item: state.items.find((item) => item.id === label.itemId)
+  })).filter((label) => label.item);
+  if (!palletLabelEntries.length) palletLabelEntries = null;
   applyHashScan();
   renderAll();
 });
@@ -39,6 +47,7 @@ function loadState() {
   if (saved) {
     try {
       const parsed = JSON.parse(saved);
+      parsed.rollLabels = parsed.rollLabels || [];
       parsed.transactions = (parsed.transactions || []).map((tx) => ({
         ...tx,
         localId: tx.localId || createLocalTransactionId()
@@ -51,6 +60,7 @@ function loadState() {
 
   return {
     items: (window.STARTER_ITEMS || []).map((item) => normalizeItemShape(item)),
+    rollLabels: [],
     transactions: (window.STARTER_TRANSACTIONS || []).map((tx) => ({
       ...tx,
       localId: tx.localId || createLocalTransactionId()
@@ -292,7 +302,7 @@ function renderDashboard() {
     const item = state.items.find((row) => row.id === tx.itemId) || {};
     return `<tr>
       <td>${formatDate(tx.timestamp)}</td>
-      <td>${escapeHtml(palletQrIdFor(item))}</td>
+      <td>${escapeHtml(tx.rollQrId || palletQrIdFor(item))}</td>
       <td>${escapeHtml(item.product || tx.product || '')}</td>
       <td><span class="pill ${tx.action.toLowerCase()}">${tx.action}</span></td>
       <td>${formatNumber(tx.rolls, 0)}</td>
@@ -470,7 +480,7 @@ function renderTransactions() {
     const isLatestForItem = state.transactions.findLastIndex((other) => other.itemId === tx.itemId) === state.transactions.indexOf(tx);
     return `<tr>
       <td>${formatDate(tx.timestamp)}</td>
-      <td>${escapeHtml(palletQrIdFor(item))}</td>
+      <td>${escapeHtml(tx.rollQrId || palletQrIdFor(item))}</td>
       <td>${escapeHtml(item.product || tx.product || '')}</td>
       <td><span class="pill ${tx.action.toLowerCase()}">${tx.action}</span></td>
       <td>${formatNumber(tx.rolls, 0)}</td>
@@ -889,6 +899,28 @@ function palletContentsFor(item) {
 
 function renderLabels() {
   const query = el('labelSearch').value.trim().toLowerCase();
+  if (palletLabelEntries) {
+    const labels = palletLabelEntries.filter((label) => {
+      const item = state.items.find((row) => row.id === label.itemId) || label.item;
+      if (!item) return false;
+      label.item = item;
+      const searchable = [label.qrId, item.id, item.category, item.product, item.gauge, item.meters, label.palletNo, label.rollNumber].join(' ').toLowerCase();
+      return !query || searchable.includes(query);
+    });
+    el('labelGrid').innerHTML = labels.map((label) => {
+      const item = label.item;
+      const payload = (window.APP_BASE_URL || (location.origin + location.pathname)) + '#scan:' + encodeURIComponent(item.id + '|roll=' + label.qrId + '|weight=' + label.weightPerRoll);
+      const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(payload);
+      return '<div class="qr-label"><img src="' + qrUrl + '" alt="QR for ' + escapeHtml(label.qrId) + '"><div>' +
+        '<strong>' + escapeHtml(label.qrId) + '</strong>' +
+        '<span>Inventory item: ' + escapeHtml(item.id) + '</span>' +
+        '<span>' + escapeHtml(item.category + ' · ' + item.product + ' · ' + item.gauge + ' · ' + item.meters + 'm') + '</span>' +
+        '<span>Pallet ' + escapeHtml(label.palletNo) + ' · Roll ' + label.rollNumber + ' of ' + label.totalRolls + '</span>' +
+        '<span>Estimated ' + formatNumber(label.weightPerRoll, 2) + ' kg/roll</span>' +
+        '</div></div>';
+    }).join('');
+    return;
+  }
   const groups = palletLabelGroups().filter((group) => {
     const master = group.items[0];
     if (labelPrintOnlyIds && !labelPrintOnlyIds.includes(master.id)) return false;
@@ -921,6 +953,7 @@ function selectScanValue(rawValue) {
     return;
   }
 
+  const scanDetails = qrScanDetails(value);
   const item = findItem(value);
   if (!item) {
     selectedItem = null;
@@ -930,16 +963,30 @@ function selectScanValue(rawValue) {
   }
 
   selectedItem = item;
-  el('scanInput').value = item.id;
+  selectedRollQrId = scanDetails.rollQrId;
+  selectedRollWeight = scanDetails.weightPerRoll;
+  el('scanInput').value = selectedRollQrId || item.id;
   renderScanResult();
 }
 
+function qrScanDetails(value) {
+  const decoded = decodeURIComponent(String(value || '').trim());
+  const hash = decoded.match(/#scan:([^#]+)/);
+  const queryId = decoded.match(/(?:^|[?&])id=([^&#]+)/);
+  const token = hash ? hash[1] : queryId ? queryId[1] : decoded;
+  const [tokenId, ...parts] = token.split('|');
+  const savedLabel = state.rollLabels?.find((label) => label.qrId.toLowerCase() === tokenId.toLowerCase());
+  if (!hash && !queryId && !savedLabel) return { itemId: decoded, rollQrId: '', weightPerRoll: null };
+  const weightText = parts.find((part) => part.startsWith('weight='))?.slice(7);
+  return {
+    itemId: parts.find((part) => part.startsWith('item='))?.slice(5) || savedLabel?.itemId || tokenId,
+    rollQrId: parts.find((part) => part.startsWith('roll='))?.slice(5) || savedLabel?.qrId || '',
+    weightPerRoll: weightText == null ? (savedLabel ? Number(savedLabel.weightPerRoll) : null) : Number(weightText)
+  };
+}
+
 function findItem(value) {
-  const decoded = decodeURIComponent(String(value).trim());
-  const hashMatch = decoded.match(/#scan:([^#]+)/);
-  const idMatch = decoded.match(/(?:^|[?&])id=([^&#]+)/);
-  const candidate = hashMatch ? hashMatch[1] : idMatch ? idMatch[1] : decoded;
-  const normalized = decodeURIComponent(candidate).trim();
+  const normalized = qrScanDetails(value).itemId.trim();
 
   return activeItems().find((item) => item.id.toLowerCase() === normalized.toLowerCase())
     || activeItems().find((item) => legacyQrText(item).toLowerCase() === normalized.toLowerCase());
@@ -965,7 +1012,7 @@ function renderScanResult() {
   panel.className = 'item-panel';
   panel.innerHTML = `
     <h2>${escapeHtml(palletMeta ? 'Pallet ' + palletMeta.palletNo : selectedItem.product)}</h2>
-    <p>${palletMeta ? palletItems.length + ' size entries' : escapeHtml(selectedItem.category)} · ${escapeHtml(palletQrIdFor(selectedItem))}</p>
+    <p>${palletMeta ? palletItems.length + ' size entries' : escapeHtml(selectedItem.category)} · Inventory ${escapeHtml(palletQrIdFor(selectedItem))}${selectedRollQrId ? ' · Roll QR ' + escapeHtml(selectedRollQrId) : ''}</p>
     ${palletPicker}
     <div class="item-detail">
       <div class="detail-box"><span>Gauge</span><strong>${escapeHtml(selectedItem.gauge)}</strong></div>
@@ -1026,7 +1073,7 @@ function postTransaction(action) {
     issuedFor = matchedJob.joNo;
   }
 
-  const weightPerRoll = Number(selectedItem.weightPerRoll || 0);
+  const weightPerRoll = Number(selectedRollWeight ?? selectedItem.weightPerRoll ?? 0);
   const totalWeight = rolls * weightPerRoll;
   const signedRolls = action === 'IN' ? rolls : -rolls;
   const signedWeight = action === 'IN' ? totalWeight : -totalWeight;
@@ -1035,6 +1082,7 @@ function postTransaction(action) {
 
   state.transactions.push({
     localId: createLocalTransactionId(),
+    rollQrId: selectedRollQrId,
     timestamp: new Date().toISOString(),
     itemId: selectedItem.id,
     product: selectedItem.product,
@@ -1277,28 +1325,30 @@ function importItemsCsv(event) {
         : parseWorkbookRows(reader.result);
       if (findPalletListHeaderIndex(rows) >= 0) {
         const receipts = rowsToPalletReceipts(rows);
-        if (!receipts.items.length) throw new Error('No pallet rows with valid roll count and net weight were found.');
-        const totalRolls = receipts.items.reduce((sum, item) => sum + item.currentRolls, 0);
-        const totalWeight = receipts.items.reduce((sum, item) => sum + item.weightPerRoll, 0);
-        const qrLabels = palletLabelGroups(receipts.items);
+        if (!receipts.labels.length) throw new Error('No pallet rows with valid roll count and net weight were found.');
+        const totalRolls = receipts.labels.length;
+        const totalWeight = receipts.labels.reduce((sum, label) => sum + label.weightPerRoll, 0);
         const approved = confirm(
-          `Prepare ${qrLabels.length} individual roll QR labels from ${receipts.sourceLineCount} pallet size rows?\n\n` +
+          `Prepare ${totalRolls} roll labels from ${receipts.sourceLineCount} pallet size rows?\n\n` +
           `${totalRolls} rolls\n${formatNumber(totalWeight, 2)} kg total\n\n` +
-          'This only prepares labels; it does NOT add stock or post deliveries. When each roll arrives, scan its QR and choose Delivery. The file has pallet totals only, so each roll gets an estimated average weight and no individual batch number. Uploading this same list again will create duplicate QR records.'
+          'Each roll gets a unique QR label linked to its matching inventory item; no inventory row is created per roll. This does NOT add stock. When rolls arrive, scan the roll QR and choose Delivery. Weights are estimated averages; individual batch numbers are not in this file.'
         );
         if (!approved) return;
 
         state.items.push(...receipts.items);
-        state.transactions.push(...receipts.transactions);
-        state.nextItemNumber = nextItemNumberFromItems(state.items);
+        state.rollLabels = state.rollLabels || [];
+        const existingLabelIds = new Set(state.rollLabels.map((label) => label.qrId));
+        state.rollLabels.push(...receipts.labels.filter((label) => !existingLabelIds.has(label.qrId)).map(({ item, ...label }) => label));
+        state.nextItemNumber = Math.max(receipts.nextNumber, nextItemNumberFromItems(state.items));
         saveState();
-        await syncPalletReceiptsToCloud(receipts.items, receipts.transactions);
+        await syncNewItemsToCloud(receipts.items);
+        palletLabelEntries = receipts.labels;
         renderAll();
         showView('labels');
-        labelPrintOnlyIds = qrLabels.map((group) => group.items[0].id);
+        labelPrintOnlyIds = null;
         el('labelSearch').value = '';
         renderLabels();
-        toast(`Prepared ${receipts.items.length} roll QR labels. Print them now; record Delivery when the rolls arrive.`);
+        toast(`Prepared ${totalRolls} roll labels linked to inventory items. Print them now; record Delivery when rolls arrive.`);
         return;
       }
       const importedItems = rowsToImportItems(rows);
@@ -1396,21 +1446,27 @@ function rowsToPalletReceipts(rows) {
   });
 
   const items = [];
-  const transactions = [];
-  let nextNumber = state.nextItemNumber;
+  const labels = [];
+  let nextNumber = state.nextItemNumber || nextItemNumberFromItems(state.items);
   const palletRollCounters = new Map();
 
   entries.forEach((entry) => {
-    for (let index = 0; index < entry.rolls; index++) {
-      const rollNumber = (palletRollCounters.get(entry.palletNo) || 0) + 1;
-      palletRollCounters.set(entry.palletNo, rollNumber);
-      const item = normalizeItemShape({
+    const sizeKey = [entry.category, entry.width, entry.gauge, entry.meters].join('|').toLowerCase();
+    let master = items.find((item) => item._sizeKey === sizeKey) || state.items.filter((item) => {
+      const itemWidth = String(item.product || '').match(/^\s*([\d.]+)\s*mm\b/i)?.[1];
+      return item.category.toLowerCase() === entry.category.toLowerCase() &&
+        Number(itemWidth) === Number(entry.width) &&
+        Number(item.gauge) === Number(entry.gauge) &&
+        Number(String(item.meters).replace(/,/g, '')) === Number(entry.meters);
+    }).sort((a, b) => Number(a.id.match(/\d+/)?.[0] || 0) - Number(b.id.match(/\d+/)?.[0] || 0))[0];
+    if (!master) {
+      master = normalizeItemShape({
         id: 'QR-' + String(nextNumber++).padStart(5, '0'),
         category: entry.category,
         product: entry.width + 'mm',
         gauge: entry.gauge,
         meters: entry.meters,
-        remarks: 'Pallet ' + entry.palletNo + ' / Roll ' + rollNumber + ' of ' + palletRollTotals.get(entry.palletNo) + ' / ' + entry.typeRemark,
+        remarks: entry.typeRemark,
         weightPerRoll: entry.weightPerRoll,
         beginningRolls: 0,
         beginningWeight: 0,
@@ -1418,10 +1474,29 @@ function rowsToPalletReceipts(rows) {
         currentWeight: 0,
         minRolls: 1
       });
-      items.push(item);
+      master._sizeKey = sizeKey;
+      items.push(master);
+    }
+    for (let index = 0; index < entry.rolls; index++) {
+      const rollNumber = (palletRollCounters.get(entry.palletNo) || 0) + 1;
+      palletRollCounters.set(entry.palletNo, rollNumber);
+      const priorLabel = (state.rollLabels || []).find((label) =>
+        label.palletNo === entry.palletNo && label.rollNumber === rollNumber && label.itemId === master.id &&
+        Number(label.weightPerRoll) === Number(entry.weightPerRoll)
+      );
+      labels.push({
+        item: master,
+        itemId: master.id,
+        qrId: priorLabel?.qrId || 'QR-' + String(nextNumber++).padStart(5, '0'),
+        palletNo: entry.palletNo,
+        rollNumber,
+        totalRolls: palletRollTotals.get(entry.palletNo),
+        weightPerRoll: entry.weightPerRoll
+      });
     }
   });
-  return { items, transactions, sourceLineCount: entries.length };
+  items.forEach((item) => delete item._sizeKey);
+  return { items, labels, nextNumber, sourceLineCount: entries.length };
 }
 
 function rowsToTemplateItems(rows) {
@@ -1601,7 +1676,7 @@ async function syncClosedWeekToCloud(summary) {
 
 function exportTransactionsCsv() {
   const headers = ['Timestamp', 'QR ID', 'Product', 'Action', 'Rolls', 'Weight/Roll', 'Total Weight', 'Balance After', 'Issued For', 'User'];
-  const rows = state.transactions.map((tx) => [tx.timestamp, tx.itemId, tx.product, tx.action, tx.rolls, tx.weightPerRoll, tx.totalWeight, tx.balanceAfter, tx.issuedFor || '', tx.user || '']);
+  const rows = state.transactions.map((tx) => [tx.timestamp, tx.rollQrId || tx.itemId, tx.product, tx.action, tx.rolls, tx.weightPerRoll, tx.totalWeight, tx.balanceAfter, tx.issuedFor || '', tx.user || '']);
   downloadText('transactions.csv', [headers, ...rows].map((row) => row.map(csvCell).join(',')).join('\n'), 'text/csv');
 }
 
@@ -1657,11 +1732,13 @@ function resetLocalData() {
   localStorage.removeItem(STORE_KEY);
   const fresh = loadState();
   state.items = fresh.items;
+  state.rollLabels = fresh.rollLabels;
   state.transactions = fresh.transactions.map((tx) => ({
     ...tx,
     localId: tx.localId || createLocalTransactionId()
   }));
   state.nextItemNumber = fresh.nextItemNumber;
+  palletLabelEntries = null;
   saveState();
   renderAll();
   toast('Local data reset.');
@@ -1687,7 +1764,7 @@ function applyHashScan() {
   const match = location.hash.match(/^#scan:(.+)$/);
   if (!match) return;
   showView('scan');
-  selectScanValue(decodeURIComponent(match[1]));
+  selectScanValue('#scan:' + match[1]);
 }
 
 function legacyQrText(item) {
@@ -1781,10 +1858,14 @@ function fromDbTransaction(row) {
 }
 
 function nextItemNumberFromItems(items) {
-  return items.reduce((max, item) => {
+  const nextItem = items.reduce((max, item) => {
     const match = String(item.id).match(/^QR-(\d+)$/);
     return match ? Math.max(max, Number(match[1]) + 1) : max;
   }, 1);
+  return (state.rollLabels || []).reduce((max, label) => {
+    const match = String(label.qrId).match(/^QR-(\d+)$/);
+    return match ? Math.max(max, Number(match[1]) + 1) : max;
+  }, nextItem);
 }
 
 function reportDescription(item) {
