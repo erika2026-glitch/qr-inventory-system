@@ -962,7 +962,10 @@ function renderLabels() {
         rollNumber: label.rollNumber,
         totalRolls: label.totalRolls
       };
-      const payload = (window.APP_BASE_URL || (location.origin + location.pathname)) + '#incoming:' + encodeURIComponent(JSON.stringify(payloadData));
+      const payload = (window.APP_BASE_URL || (location.origin + location.pathname)) +
+        (label.legacyAlias
+          ? '#scan:' + encodeURIComponent(label.qrId)
+          : '#incoming:' + encodeURIComponent(JSON.stringify(payloadData)));
       const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(payload);
       return '<div class="qr-label"><img src="' + qrUrl + '" alt="QR for ' + escapeHtml(label.qrId) + '"><div>' +
         '<strong>' + escapeHtml(label.qrId) + '</strong>' +
@@ -1882,6 +1885,7 @@ function registerLegacyPalletQrAliases() {
     });
     const label = {
       qrId: item.id,
+      legacyAlias: true,
       itemId: master?.id || '',
       palletNo: match?.[1] || '',
       rollNumber: Number(match?.[2] || 1),
