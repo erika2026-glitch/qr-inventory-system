@@ -441,14 +441,73 @@ tr:last-child td {
   font-weight: 700;
 }
 
+.field-note {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.field-note.matched {
+  color: var(--green);
+}
+
 .action-form .wide {
   grid-column: 1 / -1;
+}
+
+.pallet-content-picker {
+  margin: 12px 0;
+}
+
+.pallet-content-picker > div {
+  display: grid;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.pallet-content-choice {
+  width: 100%;
+  text-align: left;
+  background: #fff;
+  border: 1px solid var(--line);
+}
+
+.pallet-content-choice.active {
+  border-color: var(--blue);
+  background: var(--surface-2);
 }
 
 .label-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 12px;
+}
+
+.pallet-label-group {
+  grid-column: 1 / -1;
+}
+
+.pallet-label-group h2 {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin: 0 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+  font-size: 16px;
+}
+
+.pallet-label-group h2 span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.pallet-label-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
 }
 
 .qr-label {
@@ -476,6 +535,11 @@ tr:last-child td {
   color: var(--muted);
   font-size: 12px;
   margin-top: 3px;
+}
+
+.qr-label span + span {
+  border-top: 1px solid var(--line);
+  padding-top: 3px;
 }
 
 .settings-grid {
@@ -675,6 +739,11 @@ dialog::backdrop {
 
 dialog form {
   padding: 18px;
+}
+
+.dialog-note {
+  color: var(--muted);
+  margin: 6px 0 0;
 }
 
 .form-grid {
@@ -927,5 +996,66 @@ dialog form {
 
   .qr-label {
     break-inside: avoid;
+  }
+
+  body[data-print-mode="labels"] #labelGrid {
+    display: block;
+  }
+
+  body[data-print-mode="labels"] .pallet-label-group {
+    break-after: page;
+    page-break-after: always;
+  }
+
+  body[data-print-mode="labels"] .pallet-label-group:last-child {
+    break-after: auto;
+    page-break-after: auto;
+  }
+
+  body[data-print-mode="labels"] .pallet-label-group h2 {
+    margin: 0 0 3mm;
+    padding: 0 0 2mm;
+    color: #000;
+    font-size: 13pt;
+  }
+
+  body[data-print-mode="labels"] .pallet-label-group h2 span {
+    color: #000;
+    font-size: 9pt;
+  }
+
+  body[data-print-mode="labels"] .pallet-label-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 3mm;
+  }
+
+  body[data-print-mode="labels"] .qr-label {
+    grid-template-columns: 25mm minmax(0, 1fr);
+    gap: 2mm;
+    min-height: 28mm;
+    padding: 2mm;
+    border: 1px solid #000;
+    border-radius: 0;
+    color: #000;
+  }
+
+  body[data-print-mode="labels"] .qr-label img {
+    width: 25mm;
+    height: 25mm;
+  }
+
+  body[data-print-mode="labels"] .qr-label strong {
+    font-size: 10pt;
+  }
+
+  body[data-print-mode="labels"] .qr-label span {
+    margin-top: 1mm;
+    color: #000;
+    font-size: 7pt;
+  }
+
+  body[data-print-mode="labels"] .qr-label span + span {
+    border-top: 0;
+    padding-top: 0;
   }
 }

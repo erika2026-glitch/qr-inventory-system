@@ -948,32 +948,12 @@ function renderLabels() {
       const searchable = [label.qrId, label.itemId, label.category, label.product, label.gauge, label.meters, label.palletNo, label.rollNumber].join(' ').toLowerCase();
       return !query || searchable.includes(query);
     });
-    el('labelGrid').innerHTML = labels.map((label) => {
-      const payloadData = {
-        qrId: label.qrId,
-        itemId: label.itemId || '',
-        category: label.category,
-        product: label.product,
-        gauge: label.gauge,
-        meters: label.meters,
-        remarks: label.remarks,
-        weightPerRoll: label.weightPerRoll,
-        palletNo: label.palletNo,
-        rollNumber: label.rollNumber,
-        totalRolls: label.totalRolls
-      };
-      const payload = (window.APP_BASE_URL || (location.origin + location.pathname)) +
-        (label.legacyAlias
-          ? '#scan:' + encodeURIComponent(label.qrId)
-          : '#incoming:' + encodeURIComponent(JSON.stringify(payloadData)));
-      const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(payload);
-      return '<div class="qr-label"><img src="' + qrUrl + '" alt="QR for ' + escapeHtml(label.qrId) + '"><div>' +
-        '<strong>' + escapeHtml(label.qrId) + '</strong>' +
-        '<span>' + escapeHtml(label.category + ' · ' + label.product + ' · ' + label.gauge + ' · ' + label.meters + 'm') + '</span>' +
-        '<span>Pallet ' + escapeHtml(label.palletNo) + ' · Roll ' + label.rollNumber + ' of ' + label.totalRolls + '</span>' +
-        '<span>Estimated ' + formatNumber(label.weightPerRoll, 2) + ' kg/roll</span>' +
-        '</div></div>';
-    }).join('');
+    const palletGroups = [...groupBy(labels, (label) => String(label.palletNo || 'Unassigned').trim()).entries()];
+    el('labelGrid').innerHTML = palletGroups.map(([palletNo, palletLabels]) =>
+      '<section class="pallet-label-group"><h2>Pallet ' + escapeHtml(palletNo) +
+      '<span>' + palletLabels.length + (palletLabels.length === 1 ? ' roll' : ' rolls') + '</span></h2>' +
+      '<div class="pallet-label-grid">' + palletLabels.map(renderIncomingQrLabel).join('') + '</div></section>'
+    ).join('');
     return;
   }
   const groups = palletLabelGroups().filter((group) => {
@@ -999,6 +979,33 @@ function renderLabels() {
       '<span>QR ID: ' + escapeHtml(master.id) + '</span>' + contents +
       '</div></div>';
   }).join('');
+}
+
+function renderIncomingQrLabel(label) {
+  const payloadData = {
+    qrId: label.qrId,
+    itemId: label.itemId || '',
+    category: label.category,
+    product: label.product,
+    gauge: label.gauge,
+    meters: label.meters,
+    remarks: label.remarks,
+    weightPerRoll: label.weightPerRoll,
+    palletNo: label.palletNo,
+    rollNumber: label.rollNumber,
+    totalRolls: label.totalRolls
+  };
+  const payload = (window.APP_BASE_URL || (location.origin + location.pathname)) +
+    (label.legacyAlias
+      ? '#scan:' + encodeURIComponent(label.qrId)
+      : '#incoming:' + encodeURIComponent(JSON.stringify(payloadData)));
+  const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(payload);
+  return '<div class="qr-label"><img src="' + qrUrl + '" alt="QR for ' + escapeHtml(label.qrId) + '"><div>' +
+    '<strong>' + escapeHtml(label.qrId) + '</strong>' +
+    '<span>' + escapeHtml(label.category + ' · ' + label.product + ' · ' + label.gauge + ' · ' + label.meters + 'm') + '</span>' +
+    '<span>Roll ' + label.rollNumber + ' of ' + label.totalRolls + '</span>' +
+    '<span>Estimated ' + formatNumber(label.weightPerRoll, 2) + ' kg/roll</span>' +
+    '</div></div>';
 }
 
 function selectScanValue(rawValue) {
