@@ -949,11 +949,25 @@ function renderLabels() {
       return !query || searchable.includes(query);
     });
     const palletGroups = [...groupBy(labels, (label) => String(label.palletNo || 'Unassigned').trim()).entries()];
-    el('labelGrid').innerHTML = palletGroups.map(([palletNo, palletLabels]) =>
+    const sections = [];
+    if (query) {
+      const itemGroups = palletLabelGroups().filter((group) => {
+        const item = group.items[0];
+        const searchable = [item.id, item.category, item.product, item.gauge, item.meters, item.remarks].join(' ').toLowerCase();
+        return searchable.includes(query);
+      });
+      if (itemGroups.length) {
+        sections.push('<section class="pallet-label-group"><h2>Inventory QR Labels<span>' +
+          itemGroups.length + (itemGroups.length === 1 ? ' item' : ' items') +
+          '</span></h2><div class="pallet-label-grid">' + itemGroups.map(renderInventoryQrLabel).join('') + '</div></section>');
+      }
+    }
+    sections.push(...palletGroups.map(([palletNo, palletLabels]) =>
       '<section class="pallet-label-group"><h2>Pallet ' + escapeHtml(palletNo) +
       '<span>' + palletLabels.length + (palletLabels.length === 1 ? ' roll' : ' rolls') + '</span></h2>' +
       '<div class="pallet-label-grid">' + palletLabels.map(renderIncomingQrLabel).join('') + '</div></section>'
-    ).join('');
+    ));
+    el('labelGrid').innerHTML = sections.join('') || '<p class="empty-state">No matching QR labels.</p>';
     return;
   }
   const groups = palletLabelGroups().filter((group) => {
@@ -965,20 +979,22 @@ function renderLabels() {
     return !query || text.includes(query);
   });
 
-  el('labelGrid').innerHTML = groups.map((group) => {
-    const master = group.items[0];
-    const payload = (window.APP_BASE_URL || (location.origin + location.pathname)) + '#scan:' + encodeURIComponent(master.id);
-    const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(payload);
-    const title = group.palletNo ? 'Pallet ' + group.palletNo : master.id;
-    const contents = group.items.map((item) => {
-      const type = String(item.remarks || '').split('|').pop().trim();
-      return '<span>' + escapeHtml(item.category + ' · ' + item.product + ' · ' + item.gauge + ' · ' + item.meters + 'm · ' + type + ' · 1 roll · est. ' + formatNumber(item.weightPerRoll, 2) + ' kg') + '</span>';
-    }).join('');
-    return '<div class="qr-label"><img src="' + qrUrl + '" alt="QR for ' + escapeHtml(title) + '"><div>' +
-      '<strong>' + escapeHtml(title) + '</strong>' +
-      '<span>QR ID: ' + escapeHtml(master.id) + '</span>' + contents +
-      '</div></div>';
+  el('labelGrid').innerHTML = groups.map(renderInventoryQrLabel).join('') || '<p class="empty-state">No matching QR labels.</p>';
+}
+
+function renderInventoryQrLabel(group) {
+  const master = group.items[0];
+  const payload = (window.APP_BASE_URL || (location.origin + location.pathname)) + '#scan:' + encodeURIComponent(master.id);
+  const qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(payload);
+  const title = group.palletNo ? 'Pallet ' + group.palletNo : master.id;
+  const contents = group.items.map((item) => {
+    const type = String(item.remarks || '').split('|').pop().trim();
+    return '<span>' + escapeHtml(item.category + ' · ' + item.product + ' · ' + item.gauge + ' · ' + item.meters + 'm · ' + type + ' · 1 roll · est. ' + formatNumber(item.weightPerRoll, 2) + ' kg') + '</span>';
   }).join('');
+  return '<div class="qr-label"><img src="' + qrUrl + '" alt="QR for ' + escapeHtml(title) + '"><div>' +
+    '<strong>' + escapeHtml(title) + '</strong>' +
+    '<span>QR ID: ' + escapeHtml(master.id) + '</span>' + contents +
+    '</div></div>';
 }
 
 function renderIncomingQrLabel(label) {
