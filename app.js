@@ -549,6 +549,13 @@ async function voidTransaction(localId) {
 async function receiveIncomingRoll() {
   if (!selectedIncomingLabel) return;
   const label = selectedIncomingLabel;
+  const actualWeight = Number(document.getElementById('incomingActualWeight')?.value);
+  if (!Number.isFinite(actualWeight) || actualWeight <= 0) {
+    toast('Enter the actual roll weight from the scale before recording Delivery.');
+    document.getElementById('incomingActualWeight')?.focus();
+    return;
+  }
+  label.weightPerRoll = actualWeight;
   let item = selectedItem || findMasterForIncoming(label);
   if (!item) {
     item = normalizeItemShape({
@@ -1113,9 +1120,11 @@ function renderScanResult() {
         <div class="detail-box"><span>Gauge</span><strong>${escapeHtml(selectedIncomingLabel.gauge)}</strong></div>
         <div class="detail-box"><span>Meters/Roll</span><strong>${escapeHtml(selectedIncomingLabel.meters)}</strong></div>
         <div class="detail-box"><span>Pallet / Roll</span><strong>${escapeHtml(selectedIncomingLabel.palletNo)} / ${selectedIncomingLabel.rollNumber}</strong></div>
-        <div class="detail-box"><span>Estimated Weight/Roll</span><strong>${formatNumber(selectedIncomingLabel.weightPerRoll, 2)} kg</strong></div>
+        <div class="detail-box"><span>QR Weight Estimate</span><strong>${formatNumber(selectedIncomingLabel.weightPerRoll, 2)} kg</strong></div>
       </div>
-      <div class="action-form"><label>Scanned By<input id="incomingDeliveryUser" value="${escapeHtml(getStaffName())}" placeholder="Name or initials"></label>
+      <div class="action-form">
+        <label class="wide">Actual Weight (kg)<input id="incomingActualWeight" type="number" min="0.01" step="0.01" placeholder="Enter weight from scale" required></label>
+        <label class="wide">Scanned By<input id="incomingDeliveryUser" value="${escapeHtml(getStaffName())}" placeholder="Name or initials"></label>
         <button class="primary" id="receiveIncomingRollBtn">Delivery</button></div>`;
     document.getElementById('receiveIncomingRollBtn').addEventListener('click', receiveIncomingRoll);
     return;
