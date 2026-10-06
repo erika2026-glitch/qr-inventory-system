@@ -596,7 +596,7 @@ async function receiveIncomingRoll() {
   renderScanResult();
   const userField = document.getElementById('actionUser');
   if (userField) userField.value = document.getElementById('incomingDeliveryUser')?.value.trim() || getStaffName();
-  postTransaction('IN');
+  postTransaction('IN', actualWeight);
 }
 
 function initializeReportDates() {
@@ -1167,6 +1167,7 @@ function renderScanResult() {
     </div>
     <div class="action-form">
       <label>Rolls<input id="actionRolls" type="number" min="1" step="1" value="1"></label>
+      <label>Actual Weight per Roll (kg)<input id="actionWeightPerRoll" type="number" min="0.01" step="0.01" placeholder="Weigh this roll" inputmode="decimal"><small>Required for Delivery. Enter the weight shown on the scale.</small></label>
       <label>Scanned By<input id="actionUser" placeholder="Name or initials" value="${escapeHtml(getStaffName())}"></label>
       <label class="wide">Issued For / Job Order<input id="issuedForInput" list="jobOrderOptions" placeholder="Example: 026-A-010"><small id="jobOrderPreview" class="field-note">No matching job order yet.</small></label>
       <button class="primary" id="postInBtn">Delivery</button>
@@ -1186,7 +1187,7 @@ function renderScanResult() {
   updateJobOrderPreview();
 }
 
-function postTransaction(action) {
+function postTransaction(action, actualWeightOverride = null) {
   if (!selectedItem) return;
   const rolls = Number(document.getElementById('actionRolls').value);
   const user = document.getElementById('actionUser').value.trim();
@@ -1216,7 +1217,17 @@ function postTransaction(action) {
     issuedFor = matchedJob.joNo;
   }
 
-  const weightPerRoll = Number(selectedRollWeight ?? selectedItem.weightPerRoll ?? 0);
+  let weightPerRoll = Number(selectedRollWeight ?? selectedItem.weightPerRoll ?? 0);
+  if (action === 'IN') {
+    const weightInput = document.getElementById('actionWeightPerRoll');
+    const actualWeight = actualWeightOverride ?? Number(weightInput?.value);
+    if (!Number.isFinite(actualWeight) || actualWeight <= 0) {
+      toast('Enter the actual weight of this roll before recording Delivery.');
+      weightInput?.focus();
+      return;
+    }
+    weightPerRoll = actualWeight;
+  }
   const totalWeight = rolls * weightPerRoll;
   const signedRolls = action === 'IN' ? rolls : -rolls;
   const signedWeight = action === 'IN' ? totalWeight : -totalWeight;
