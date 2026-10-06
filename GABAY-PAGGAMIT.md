@@ -24,7 +24,7 @@ Ang timbang bawat rolyo mula sa pallet list ay average lamang kung total net wei
 1. Tiyaking online ang app kung kailangan makita ng ibang device ang bagong stock.
 2. Pumunta sa **Scan**. I-scan ang QR gamit ang camera ng tablet o maglagay ng QR ID/text sa field. Kung camera ang gagamitin, piliin ang **Start Camera Scan** at payagan ang browser na gumamit ng camera.
 3. Suriin ang category, lapad/product, gauge, meters, at pallet/roll details na ipinakita.
-4. Para sa QR mula sa pallet list, timbangin muna ang rolyo. Ilagay ang **Actual Weight (kg)** mula sa timbangan; ang timbang na naka-print sa QR ay estimate lang mula sa total pallet weight at roll count.
+4. Para sa QR mula sa pallet list, timbangin muna ang rolyo. Tiyakin o itama ang **Pallet Number**, at ilagay ang **Actual Weight (kg)** mula sa timbangan; ang timbang na naka-print sa QR ay estimate lang mula sa total pallet weight at roll count.
 5. Piliin ang **Delivery** kapag pisikal nang natanggap ang rolyo. Karaniwan ay isang rolyo bawat QR, kaya bilang na **1** ang gamitin kung hihingan ng bilang.
 6. Kapag may katugmang inventory item, idaragdag ang Delivery roon gamit ang aktuwal na timbang. Kung walang katugma, gagawa ang app ng inventory item sa oras ng Delivery.
 7. Hintaying lumabas ang matagumpay na confirmation bago magpatuloy sa susunod na rolyo.

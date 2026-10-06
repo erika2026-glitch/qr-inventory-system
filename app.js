@@ -555,6 +555,13 @@ async function receiveIncomingRoll() {
     document.getElementById('incomingActualWeight')?.focus();
     return;
   }
+  const palletNo = document.getElementById('incomingPalletNo')?.value.trim();
+  if (!palletNo) {
+    toast('Enter the pallet number before recording Delivery.');
+    document.getElementById('incomingPalletNo')?.focus();
+    return;
+  }
+  label.palletNo = palletNo;
   label.weightPerRoll = actualWeight;
   let item = selectedItem || findMasterForIncoming(label);
   if (!item) {
@@ -1119,10 +1126,11 @@ function renderScanResult() {
         <div class="detail-box"><span>Inventory Match</span><strong>${selectedItem ? escapeHtml(selectedItem.id) : 'Will create item on delivery'}</strong></div>
         <div class="detail-box"><span>Gauge</span><strong>${escapeHtml(selectedIncomingLabel.gauge)}</strong></div>
         <div class="detail-box"><span>Meters/Roll</span><strong>${escapeHtml(selectedIncomingLabel.meters)}</strong></div>
-        <div class="detail-box"><span>Pallet / Roll</span><strong>${escapeHtml(selectedIncomingLabel.palletNo)} / ${selectedIncomingLabel.rollNumber}</strong></div>
+        <div class="detail-box"><span>Roll Number</span><strong>${selectedIncomingLabel.rollNumber} of ${selectedIncomingLabel.totalRolls}</strong></div>
         <div class="detail-box"><span>QR Weight Estimate</span><strong>${formatNumber(selectedIncomingLabel.weightPerRoll, 2)} kg</strong></div>
       </div>
       <div class="action-form">
+        <label class="wide">Pallet Number<input id="incomingPalletNo" value="${escapeHtml(selectedIncomingLabel.palletNo || '')}" placeholder="Enter pallet number" required></label>
         <label class="wide">Actual Weight (kg)<input id="incomingActualWeight" type="number" min="0.01" step="0.01" placeholder="Enter weight from scale" required></label>
         <label class="wide">Scanned By<input id="incomingDeliveryUser" value="${escapeHtml(getStaffName())}" placeholder="Name or initials"></label>
         <button class="primary" id="receiveIncomingRollBtn">Delivery</button></div>`;
@@ -1919,16 +1927,16 @@ function registerLegacyPalletQrAliases() {
       qrId: item.id,
       legacyAlias: true,
       itemId: master?.id || '',
-      palletNo: match?.[1] || '',
+      palletNo: existing?.palletNo || match?.[1] || '',
       rollNumber: Number(match?.[2] || 1),
       totalRolls: Number(match?.[3] || 1),
-      weightPerRoll: Number(item.weightPerRoll || 0),
+      weightPerRoll: existing?.delivered ? Number(existing.weightPerRoll || 0) : Number(item.weightPerRoll || 0),
       category: item.category,
       product: item.product,
       gauge: item.gauge,
       meters: item.meters,
       remarks: match?.[4] || '',
-      delivered: state.transactions.some((tx) => tx.itemId === item.id)
+      delivered: Boolean(existing?.delivered || state.transactions.some((tx) => tx.itemId === item.id && tx.action === 'IN'))
     };
     if (existing) {
       Object.assign(existing, label);
