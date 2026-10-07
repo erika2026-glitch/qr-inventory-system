@@ -362,8 +362,10 @@ function renderInventory() {
 }
 
 function getItemMovement(itemId) {
+  const latestClosedWeek = latestClosedWeekBefore(null);
+  const closedThrough = latestClosedWeek ? new Date(`${latestClosedWeek.to}T23:59:59.999`) : null;
   return state.transactions
-    .filter((tx) => resolveInventoryItemId(tx.itemId) === itemId)
+    .filter((tx) => resolveInventoryItemId(tx.itemId) === itemId && (!closedThrough || new Date(tx.timestamp) > closedThrough))
     .reduce((totals, tx) => {
       const rolls = Number(tx.rolls || 0);
       const weight = Number(tx.totalWeight || 0);
@@ -845,11 +847,41 @@ function buildReportGrandTotals(rows) {
 function buildWeeklySummary(from, to) {
   const fromDate = from ? new Date(`${from}T00:00:00`) : null;
   const toDate = to ? new Date(`${to}T23:59:59`) : null;
+  const closedWeek = (state.closedWeeks || []).find((week) => week.from === from && week.to === to);
+  const priorClosedWeek = latestClosedWeekBefore(from);
 
   return activeItems().map((item) => {
+    const archivedRow = closedWeek?.rows?.find((row) => row.id === item.id);
+    if (archivedRow) return { ...archivedRow, item, category: item.category };
+
+    const priorClosedRow = priorClosedWeek?.rows?.find((row) => row.id === item.id);
+    const originalRow = earliestClosedWeek()?.rows?.find((row) => row.id === item.id);
+    const beginningRolls = Number(priorClosedRow?.endingRolls ?? originalRow?.beginningRolls ?? item.beginningRolls ?? item.currentRolls ?? 0);
+    const beginningWeight = Number(priorClosedRow?.endingWeight ?? originalRow?.beginningWeight ?? item.beginningWeight ?? item.currentWeight ?? 0);
+    const baselineDate = priorClosedWeek ? new Date(`${priorClosedWeek.to}T23:59:59.999`) : null;
+    const priorTransactions = state.transactions.filter((tx) => {
+      const txDate = new Date(tx.timestamp);
+      return resolveInventoryItemId(tx.itemId) === item.id
+        && (!baselineDate || txDate > baselineDate)
+        && (!fromDate || txDate < fromDate);
+    });
+    const opening = priorTransactions.reduce((sum, tx) => {
+      const rolls = Number(tx.rolls || 0);
+      const weight = Number(tx.totalWeight || 0);
+      if (tx.action === 'IN') {
+        sum.rolls += rolls;
+        sum.weight += weight;
+      } else if (tx.action === 'OUT') {
+        sum.rolls -= rolls;
+        sum.weight -= weight;
+      }
+      return sum;
+    }, { rolls: 0, weight: 0 });
     const periodTx = state.transactions.filter((tx) => {
       const txDate = new Date(tx.timestamp);
-      return resolveInventoryItemId(tx.itemId) === item.id && (!fromDate || txDate >= fromDate) && (!toDate || txDate <= toDate);
+      return resolveInventoryItemId(tx.itemId) === item.id
+        && (!fromDate || txDate >= fromDate)
+        && (!toDate || txDate <= toDate);
     });
     const totals = periodTx.reduce((sum, tx) => {
       const rolls = Number(tx.rolls || 0);
@@ -863,20 +895,29 @@ function buildWeeklySummary(from, to) {
       }
       return sum;
     }, { inRolls: 0, inWeight: 0, outRolls: 0, outWeight: 0 });
-    const beginningRolls = Number(item.beginningRolls ?? item.currentRolls ?? 0);
-    const beginningWeight = Number(item.beginningWeight ?? item.currentWeight ?? 0);
-    const endingRolls = beginningRolls + totals.inRolls - totals.outRolls;
-    const endingWeight = Math.max(0, beginningWeight + totals.inWeight - totals.outWeight);
+    const reportBeginningRolls = beginningRolls + opening.rolls;
+    const reportBeginningWeight = beginningWeight + opening.weight;
+    const endingRolls = reportBeginningRolls + totals.inRolls - totals.outRolls;
+    const endingWeight = Math.max(0, reportBeginningWeight + totals.inWeight - totals.outWeight);
     return {
       item,
       category: item.category,
-      beginningRolls,
-      beginningWeight,
+      beginningRolls: reportBeginningRolls,
+      beginningWeight: reportBeginningWeight,
       ...totals,
       endingRolls,
       endingWeight
     };
   });
+}
+
+function latestClosedWeekBefore(date) {
+  const weeks = (state.closedWeeks || []).filter((week) => !date || week.to < date);
+  return weeks.sort((a, b) => b.to.localeCompare(a.to))[0] || null;
+}
+
+function earliestClosedWeek() {
+  return (state.closedWeeks || []).slice().sort((a, b) => a.to.localeCompare(b.to))[0] || null;
 }
 
 function renderClosedWeeks() {
@@ -893,8 +934,13 @@ function renderClosedWeeks() {
 function closeWeek() {
   const from = el('reportFrom').value;
   const to = el('reportTo').value;
-  if (!from || !to) {
+  if (!from || !to || from > to) {
     toast('Choose a report date range first.');
+    return;
+  }
+  const latestClosedWeek = latestClosedWeekBefore(null);
+  if (latestClosedWeek && from <= latestClosedWeek.to) {
+    toast(`This period overlaps or precedes the latest closed week (${latestClosedWeek.from} to ${latestClosedWeek.to}).`);
     return;
   }
   if (!confirm(`Close week ${from} to ${to}? Ending inventory will become the new beginning inventory.`)) {
@@ -1807,6 +1853,8 @@ async function syncClosedWeekToCloud(summary) {
   if (!cloudEnabled) return;
   try {
     await Promise.all(summary.map((row) => cloudPatch('items', 'id', row.item.id, {
+      beginning_rolls: row.endingRolls,
+      beginning_weight: row.endingWeight,
       current_rolls: row.endingRolls,
       current_weight: row.endingWeight
     })));
@@ -1857,6 +1905,8 @@ function restoreBackup(event) {
       if (!Array.isArray(restored.items) || !Array.isArray(restored.transactions)) throw new Error('Invalid backup file.');
       state.items = restored.items;
       state.transactions = restored.transactions;
+      state.closedWeeks = restored.closedWeeks || [];
+      state.rollLabels = restored.rollLabels || [];
       state.nextItemNumber = restored.nextItemNumber || restored.items.length + 1;
       saveState();
       renderAll();
