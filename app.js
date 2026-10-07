@@ -363,7 +363,9 @@ function renderInventory() {
 
 function getItemMovement(itemId) {
   const latestClosedWeek = latestClosedWeekBefore(null);
-  const closedThrough = latestClosedWeek ? new Date(`${latestClosedWeek.to}T23:59:59.999`) : null;
+  const item = state.items.find((row) => row.id === itemId);
+  const closedThroughDate = [latestClosedWeek?.to, item?.balanceAsOf].filter(Boolean).sort().at(-1);
+  const closedThrough = closedThroughDate ? new Date(`${closedThroughDate}T23:59:59.999`) : null;
   return state.transactions
     .filter((tx) => resolveInventoryItemId(tx.itemId) === itemId && (!closedThrough || new Date(tx.timestamp) > closedThrough))
     .reduce((totals, tx) => {
@@ -858,7 +860,8 @@ function buildWeeklySummary(from, to) {
     const originalRow = earliestClosedWeek()?.rows?.find((row) => row.id === item.id);
     const beginningRolls = Number(priorClosedRow?.endingRolls ?? originalRow?.beginningRolls ?? item.beginningRolls ?? item.currentRolls ?? 0);
     const beginningWeight = Number(priorClosedRow?.endingWeight ?? originalRow?.beginningWeight ?? item.beginningWeight ?? item.currentWeight ?? 0);
-    const baselineDate = priorClosedWeek ? new Date(`${priorClosedWeek.to}T23:59:59.999`) : null;
+    const baselineDateValue = priorClosedWeek?.to || (!state.closedWeeks?.length ? item.balanceAsOf : '');
+    const baselineDate = baselineDateValue ? new Date(`${baselineDateValue}T23:59:59.999`) : null;
     const priorTransactions = state.transactions.filter((tx) => {
       const txDate = new Date(tx.timestamp);
       return resolveInventoryItemId(tx.itemId) === item.id
@@ -922,13 +925,18 @@ function earliestClosedWeek() {
 
 function renderClosedWeeks() {
   const weeks = state.closedWeeks || [];
+  const latestWeek = latestClosedWeekBefore(null);
   el('closedWeeksRows').innerHTML = weeks.slice().reverse().map((week) => `<tr>
     <td>${escapeHtml(week.from)} to ${escapeHtml(week.to)}</td>
     <td>${formatDate(week.closedAt)}</td>
     <td>${week.itemCount}</td>
     <td>${formatNumber(week.totalEndingRolls, 0)}</td>
     <td>${formatNumber(week.totalEndingWeight, 2)}</td>
-  </tr>`).join('') || `<tr><td colspan="5">No closed weeks yet.</td></tr>`;
+    <td>${week === latestWeek ? '<button class="secondary reopen-week-btn">Reopen</button>' : ''}</td>
+  </tr>`).join('') || `<tr><td colspan="6">No closed weeks yet.</td></tr>`;
+  el('closedWeeksRows').querySelectorAll('.reopen-week-btn').forEach((button) => {
+    button.addEventListener('click', reopenLatestWeek);
+  });
 }
 
 function closeWeek() {
@@ -936,6 +944,10 @@ function closeWeek() {
   const to = el('reportTo').value;
   if (!from || !to || from > to) {
     toast('Choose a report date range first.');
+    return;
+  }
+  if (to > toDateInput(new Date())) {
+    toast('This period includes future dates. Close it after the To date has passed.');
     return;
   }
   const latestClosedWeek = latestClosedWeekBefore(null);
@@ -949,10 +961,12 @@ function closeWeek() {
 
   const summary = buildWeeklySummary(from, to);
   summary.forEach((row) => {
+    row.previousBalanceAsOf = row.item.balanceAsOf || latestClosedWeek?.to || '';
     row.item.beginningRolls = row.endingRolls;
     row.item.beginningWeight = row.endingWeight;
     row.item.currentRolls = row.endingRolls;
     row.item.currentWeight = row.endingWeight;
+    row.item.balanceAsOf = to;
   });
   state.closedWeeks = state.closedWeeks || [];
   state.closedWeeks.push({
@@ -965,6 +979,7 @@ function closeWeek() {
     rows: summary.map((row) => ({
       id: row.item.id,
       product: row.item.product,
+      previousBalanceAsOf: row.previousBalanceAsOf,
       beginningRolls: row.beginningRolls,
       beginningWeight: row.beginningWeight,
       inRolls: row.inRolls,
@@ -979,6 +994,29 @@ function closeWeek() {
   syncClosedWeekToCloud(summary);
   renderAll();
   toast('Week closed. Ending inventory is now the next beginning inventory.');
+}
+
+function reopenLatestWeek() {
+  const week = latestClosedWeekBefore(null);
+  if (!week) return;
+  if (!confirm(`Reopen ${week.from} to ${week.to}? The saved beginning balances will be restored and all transactions will be counted again.`)) return;
+
+  state.closedWeeks = state.closedWeeks.filter((row) => row !== week);
+  activeItems().forEach((item) => {
+    const saved = week.rows?.find((row) => row.id === item.id);
+    if (saved) {
+      item.beginningRolls = Number(saved.beginningRolls || 0);
+      item.beginningWeight = Number(saved.beginningWeight || 0);
+      item.balanceAsOf = saved.previousBalanceAsOf || latestClosedWeekBefore(null)?.to || '';
+    }
+    const movement = getItemMovement(item.id);
+    item.currentRolls = Number(item.beginningRolls || 0) + movement.inRolls - movement.outRolls;
+    item.currentWeight = Math.max(0, Number(item.beginningWeight || 0) + movement.inWeight - movement.outWeight);
+  });
+  saveState();
+  syncReopenedWeekToCloud();
+  renderAll();
+  toast(`Week ${week.from} to ${week.to} reopened. Inventory balances recalculated.`);
 }
 
 function palletMetadata(item) {
@@ -1855,12 +1893,29 @@ async function syncClosedWeekToCloud(summary) {
     await Promise.all(summary.map((row) => cloudPatch('items', 'id', row.item.id, {
       beginning_rolls: row.endingRolls,
       beginning_weight: row.endingWeight,
+      balance_as_of: row.item.balanceAsOf,
       current_rolls: row.endingRolls,
       current_weight: row.endingWeight
     })));
   } catch (error) {
     setSyncStatus('Sync error', 'offline');
     toast(`Week closed locally, but cloud sync failed: ${error.message}`);
+  }
+}
+
+async function syncReopenedWeekToCloud() {
+  if (!cloudEnabled) return;
+  try {
+    await Promise.all(activeItems().map((item) => cloudPatch('items', 'id', item.id, {
+      beginning_rolls: item.beginningRolls,
+      beginning_weight: item.beginningWeight,
+      balance_as_of: item.balanceAsOf || null,
+      current_rolls: item.currentRolls,
+      current_weight: item.currentWeight
+    })));
+  } catch (error) {
+    setSyncStatus('Sync error', 'offline');
+    toast(`Week reopened locally, but cloud sync failed: ${error.message}`);
   }
 }
 
@@ -2026,6 +2081,7 @@ function toDbItem(item) {
     current_weight: item.currentWeight,
     beginning_rolls: item.beginningRolls ?? item.currentRolls,
     beginning_weight: item.beginningWeight ?? item.currentWeight,
+    ...(item.balanceAsOf ? { balance_as_of: item.balanceAsOf } : {}),
     min_rolls: item.minRolls
   };
 }
@@ -2037,6 +2093,7 @@ function normalizeItemShape(item) {
     ...item,
     beginningRolls: Number(item.beginningRolls ?? currentRolls),
     beginningWeight: Number(item.beginningWeight ?? currentWeight),
+    balanceAsOf: item.balanceAsOf || '',
     currentRolls,
     currentWeight,
     minRolls: Number(item.minRolls ?? 1)
@@ -2056,6 +2113,7 @@ function fromDbItem(row) {
     currentWeight: Number(row.current_weight || 0),
     beginningRolls: Number(row.beginning_rolls ?? row.current_rolls ?? 0),
     beginningWeight: Number(row.beginning_weight ?? row.current_weight ?? 0),
+    balanceAsOf: row.balance_as_of || '',
     minRolls: Number(row.min_rolls || 1)
   });
 }
@@ -2117,7 +2175,10 @@ function groupBy(rows, keyFn) {
 }
 
 function toDateInput(date) {
-  return date.toISOString().slice(0, 10);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function formatShortDate(value) {
