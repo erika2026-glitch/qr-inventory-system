@@ -529,6 +529,13 @@ async function voidTransaction(localId) {
   }
 
   state.transactions.splice(index, 1);
+  if (tx.action === 'IN' && tx.rollQrId) {
+    const label = state.rollLabels?.find((row) => row.qrId === tx.rollQrId);
+    if (label) {
+      label.delivered = false;
+      label.itemId = resolveInventoryItemId(tx.itemId);
+    }
+  }
   const item = state.items.find((row) => row.id === resolveInventoryItemId(tx.itemId));
   if (item) {
     const movement = getItemMovement(item.id);
@@ -1273,6 +1280,12 @@ function renderScanResult() {
 
 function postTransaction(action, actualWeightOverride = null) {
   if (!selectedItem) return;
+  if (action === 'IN' && selectedRollQrId && state.transactions.some((tx) =>
+    tx.action === 'IN' && tx.rollQrId === selectedRollQrId
+  )) {
+    toast(`Delivery for ${selectedRollQrId} is already recorded. Void that transaction before receiving this roll again.`);
+    return;
+  }
   const rolls = Number(document.getElementById('actionRolls').value);
   const user = document.getElementById('actionUser').value.trim();
   let issuedFor = action === 'OUT' ? document.getElementById('issuedForInput').value.trim() : '';
