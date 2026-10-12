@@ -151,7 +151,11 @@ async function cloudPatch(table, idColumn, idValue, row) {
     },
     body: JSON.stringify(row)
   });
-  return readCloudResponse(response);
+  const updated = await readCloudResponse(response);
+  if (!Array.isArray(updated) || !updated.length) {
+    throw new Error(`Supabase did not update ${table} row ${idValue}. Check its Row Level Security policies.`);
+  }
+  return updated;
 }
 
 async function cloudDelete(table, idColumn, idValue) {
@@ -159,7 +163,11 @@ async function cloudDelete(table, idColumn, idValue) {
     method: 'DELETE',
     headers: { ...cloudHeaders(), Prefer: 'return=representation' }
   });
-  return readCloudResponse(response);
+  const deleted = await readCloudResponse(response);
+  if (!Array.isArray(deleted) || !deleted.length) {
+    throw new Error(`Supabase did not delete ${table} row ${idValue}. Check its Row Level Security policies.`);
+  }
+  return deleted;
 }
 
 function cloudHeaders() {
