@@ -35,6 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   bindActions();
   await initCloud();
   registerLegacyPalletQrAliases();
+  reconcileRollLabelDeliveryState();
   palletLabelEntries = (state.rollLabels || []).map((label) => ({ ...label }));
   if (!palletLabelEntries.length) palletLabelEntries = null;
   applyHashScan();
@@ -384,7 +385,9 @@ function getItemMovement(itemId) {
   const closedThroughDate = [latestClosedWeek?.to, item?.balanceAsOf].filter(Boolean).sort().at(-1);
   const closedThrough = closedThroughDate ? new Date(`${closedThroughDate}T23:59:59.999`) : null;
   return state.transactions
-    .filter((tx) => resolveInventoryItemId(tx.itemId) === itemId && (!closedThrough || new Date(tx.timestamp) > closedThrough))
+    .filter((tx) => resolveInventoryItemId(tx.itemId) === itemId
+      && isEffectiveTransaction(tx)
+      && (!closedThrough || new Date(tx.timestamp) > closedThrough))
     .reduce((totals, tx) => {
       const rolls = Number(tx.rolls || 0);
       const weight = Number(tx.totalWeight || 0);
@@ -421,6 +424,10 @@ function isVoidReversal(tx) {
 function isTransactionVoided(tx) {
   const key = transactionKey(tx);
   return state.transactions.some((candidate) => candidate !== tx && voidTargetId(candidate) === key);
+}
+
+function isEffectiveTransaction(tx) {
+  return !isVoidReversal(tx) && !isTransactionVoided(tx);
 }
 
 function buildInventoryTotalRows(rows) {
@@ -783,7 +790,7 @@ function buildJobOrderUsageRows() {
   return state.transactions
     .filter((tx) => {
       const date = new Date(tx.timestamp);
-      return tx.action === 'OUT' && !isVoidReversal(tx)
+      return tx.action === 'OUT' && isEffectiveTransaction(tx)
         && String(tx.issuedFor || '').trim()
         && (!fromDate || date >= fromDate)
         && (!toDate || date <= toDate);
@@ -934,6 +941,7 @@ function buildWeeklySummary(from, to) {
     const priorTransactions = state.transactions.filter((tx) => {
       const txDate = new Date(tx.timestamp);
       return resolveInventoryItemId(tx.itemId) === item.id
+        && isEffectiveTransaction(tx)
         && (!baselineDate || txDate > baselineDate)
         && (!fromDate || txDate < fromDate);
     });
@@ -952,6 +960,7 @@ function buildWeeklySummary(from, to) {
     const periodTx = state.transactions.filter((tx) => {
       const txDate = new Date(tx.timestamp);
       return resolveInventoryItemId(tx.itemId) === item.id
+        && isEffectiveTransaction(tx)
         && (!fromDate || txDate >= fromDate)
         && (!toDate || txDate <= toDate);
     });
@@ -1348,7 +1357,7 @@ function renderScanResult() {
 function postTransaction(action, actualWeightOverride = null) {
   if (!selectedItem) return;
   if (action === 'IN' && selectedRollQrId && state.transactions.some((tx) =>
-    tx.action === 'IN' && tx.rollQrId === selectedRollQrId && !isTransactionVoided(tx)
+    tx.action === 'IN' && tx.rollQrId === selectedRollQrId && isEffectiveTransaction(tx)
   )) {
     toast(`Delivery for ${selectedRollQrId} is already recorded. Void that transaction before receiving this roll again.`);
     return;
@@ -2462,13 +2471,13 @@ function registerLegacyPalletQrAliases() {
       palletNo: existing?.palletNo || match?.[1] || '',
       rollNumber: Number(match?.[2] || 1),
       totalRolls: Number(match?.[3] || 1),
-      weightPerRoll: existing?.delivered ? Number(existing.weightPerRoll || 0) : Number(item.weightPerRoll || 0),
+      weightPerRoll: Number(item.weightPerRoll || 0),
       category: item.category,
       product: item.product,
       gauge: item.gauge,
       meters: item.meters,
       remarks: match?.[4] || '',
-      delivered: Boolean(existing?.delivered || state.transactions.some((tx) => tx.itemId === item.id && tx.action === 'IN' && !isTransactionVoided(tx) && !isVoidReversal(tx)))
+      delivered: false
     };
     if (existing) {
       Object.assign(existing, label);
@@ -2476,6 +2485,25 @@ function registerLegacyPalletQrAliases() {
       state.rollLabels.push(label);
     }
     changed = true;
+  });
+  if (changed) saveState();
+}
+
+function reconcileRollLabelDeliveryState() {
+  state.rollLabels = state.rollLabels || [];
+  let changed = false;
+  state.rollLabels.forEach((label) => {
+    const delivery = state.transactions.find((tx) => tx.rollQrId === label.qrId
+      && tx.action === 'IN' && isEffectiveTransaction(tx));
+    const delivered = Boolean(delivery);
+    if (label.delivered !== delivered) {
+      label.delivered = delivered;
+      changed = true;
+    }
+    if (delivery && Number(label.weightPerRoll) !== Number(delivery.weightPerRoll)) {
+      label.weightPerRoll = Number(delivery.weightPerRoll || 0);
+      changed = true;
+    }
   });
   if (changed) saveState();
 }
