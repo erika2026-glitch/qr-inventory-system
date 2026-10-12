@@ -313,11 +313,12 @@ function renderDashboard() {
 
   el('recentRows').innerHTML = state.transactions.slice(-8).reverse().map((tx) => {
     const item = state.items.find((row) => row.id === tx.itemId) || {};
+    const label = isVoidReversal(tx) ? 'VOID REVERSAL' : isTransactionVoided(tx) ? 'VOIDED' : tx.action;
     return `<tr>
       <td>${formatDate(tx.timestamp)}</td>
       <td>${escapeHtml(tx.rollQrId || palletQrIdFor(item))}</td>
       <td>${escapeHtml(item.product || tx.product || '')}</td>
-      <td><span class="pill ${tx.action.toLowerCase()}">${tx.action}</span></td>
+      <td><span class="pill ${isVoidReversal(tx) || isTransactionVoided(tx) ? 'warn' : tx.action.toLowerCase()}">${label}</span></td>
       <td>${formatNumber(tx.rolls, 0)}</td>
       <td>${formatNumber(tx.totalWeight, 2)}</td>
     </tr>`;
@@ -388,6 +389,30 @@ function getItemMovement(itemId) {
       }
       return totals;
     }, { inRolls: 0, inWeight: 0, outRolls: 0, outWeight: 0 });
+}
+
+function transactionKey(tx) {
+  return String(tx.dbId ?? tx.localId);
+}
+
+function voidTargetId(tx) {
+  if (tx.voidsTransactionId) return String(tx.voidsTransactionId);
+  const marker = String(tx.issuedFor || tx.user || '').split('|', 1)[0];
+  const match = marker.match(/^VOID REVERSAL:\s*(.+)$/);
+  return match?.[1].trim() || '';
+}
+
+function transactionUser(tx) {
+  return String(tx.user || '').replace(/^VOID REVERSAL: [^|]+\|\s*/, '');
+}
+
+function isVoidReversal(tx) {
+  return Boolean(voidTargetId(tx));
+}
+
+function isTransactionVoided(tx) {
+  const key = transactionKey(tx);
+  return state.transactions.some((candidate) => candidate !== tx && voidTargetId(candidate) === key);
 }
 
 function buildInventoryTotalRows(rows) {
@@ -495,22 +520,33 @@ function renderTransactions() {
   el('transactionRows').innerHTML = rows.map((tx) => {
     const item = state.items.find((row) => row.id === tx.itemId) || {};
     const isLatestForItem = state.transactions.findLastIndex((other) => other.itemId === tx.itemId) === state.transactions.indexOf(tx);
+    const isReversal = isVoidReversal(tx);
+    const isVoided = isTransactionVoided(tx);
+    const actionLabel = isReversal ? 'VOID REVERSAL' : isVoided ? 'VOIDED' : tx.action;
+    const issuedFor = isReversal ? `Reversal for #${voidTargetId(tx)}` : tx.issuedFor || '';
     return `<tr>
       <td>${formatDate(tx.timestamp)}</td>
       <td>${escapeHtml(tx.rollQrId || palletQrIdFor(item))}</td>
       <td>${escapeHtml(item.product || tx.product || '')}</td>
-      <td><span class="pill ${tx.action.toLowerCase()}">${tx.action}</span></td>
+      <td><span class="pill ${isReversal || isVoided ? 'warn' : tx.action.toLowerCase()}">${actionLabel}</span></td>
       <td>${formatNumber(tx.rolls, 0)}</td>
       <td>${formatNumber(tx.weightPerRoll, 2)}</td>
       <td>${formatNumber(tx.totalWeight, 2)}</td>
       <td>${formatNumber(tx.balanceAfter, 0)}</td>
-      <td>${escapeHtml(tx.issuedFor || '')}</td>
-      <td>${escapeHtml(tx.user || '')}</td>
-      <td>${isLatestForItem ? `<button class="danger void-transaction-btn" data-tx-id="${escapeHtml(tx.localId)}" title="Void this latest transaction">Void</button>` : ''}</td>
+      <td>${escapeHtml(issuedFor)}</td>
+      <td>${escapeHtml(transactionUser(tx))}</td>
+      <td>${isLatestForItem && !isReversal && !isVoided ? `<button class="danger void-transaction-btn" data-tx-id="${escapeHtml(tx.localId)}" title="Reverse this latest transaction">Void</button>` : ''}</td>
     </tr>`;
   }).join('') || `<tr><td colspan="11">No transactions yet.</td></tr>`;
   el('transactionRows').querySelectorAll('.void-transaction-btn').forEach((button) => {
-    button.addEventListener('click', () => voidTransaction(button.dataset.txId));
+    button.addEventListener('click', async () => {
+      button.disabled = true;
+      try {
+        await voidTransaction(button.dataset.txId);
+      } finally {
+        if (button.isConnected) button.disabled = false;
+      }
+    });
   });
 }
 
@@ -523,20 +559,51 @@ async function voidTransaction(localId) {
     toast('This is no longer the latest movement for that QR and cannot be voided.');
     return;
   }
-  if (!confirm(`Permanently void this ${tx.action === 'IN' ? 'Delivery' : 'Issuance'} of ${tx.rolls} roll(s) for ${tx.itemId}? The stock balance will be recalculated. This cannot be undone.`)) return;
+  if (isVoidReversal(tx) || isTransactionVoided(tx)) {
+    toast('This transaction has already been voided.');
+    return;
+  }
+  if (cloudEnabled && tx.dbId == null) {
+    toast('This transaction is still syncing. Wait for its online save before voiding it.');
+    return;
+  }
+  if (!confirm(`Void this ${tx.action === 'IN' ? 'Delivery' : 'Issuance'} of ${tx.rolls} roll(s) for ${tx.itemId}? A reversal will be added to the audit trail and the stock balance will be recalculated.`)) return;
 
+  const reversal = {
+    localId: createLocalTransactionId(),
+    rollQrId: tx.rollQrId || '',
+    timestamp: new Date().toISOString(),
+    itemId: tx.itemId,
+    product: tx.product,
+    action: tx.action === 'IN' ? 'OUT' : 'IN',
+    rolls: Number(tx.rolls || 0),
+    weightPerRoll: Number(tx.weightPerRoll || 0),
+    totalWeight: Number(tx.totalWeight || 0),
+    balanceAfter: 0,
+    issuedFor: `VOID REVERSAL: ${transactionKey(tx)}`,
+    user: localStorage.getItem(STAFF_KEY) || transactionUser(tx),
+    voidsTransactionId: transactionKey(tx)
+  };
   if (cloudEnabled) {
-    if (tx.dbId != null) {
+    try {
+      let inserted;
       try {
-        await cloudDelete('transactions', 'id', tx.dbId);
+        inserted = await cloudInsert('transactions', [toDbTransaction(reversal)]);
       } catch (error) {
-        toast(`Could not void online transaction: ${error.message}`);
-        return;
+        if (!String(error.message || error).toLowerCase().includes('issued_for')) throw error;
+        const row = toDbTransaction(reversal);
+        delete row.issued_for;
+        inserted = await cloudInsert('transactions', [row]);
       }
+      reversal.dbId = inserted[0]?.id;
+      if (reversal.dbId == null) throw new Error('Supabase did not return the saved reversal transaction.');
+    } catch (error) {
+      toast(`Could not void online transaction: ${error.message}`);
+      return;
     }
   }
+  state.transactions.push(reversal);
 
-  state.transactions.splice(index, 1);
   if (tx.action === 'IN' && tx.rollQrId) {
     const label = state.rollLabels?.find((row) => row.qrId === tx.rollQrId);
     if (label) {
@@ -549,6 +616,7 @@ async function voidTransaction(localId) {
     const movement = getItemMovement(item.id);
     item.currentRolls = Number(item.beginningRolls || 0) + movement.inRolls - movement.outRolls;
     item.currentWeight = Math.max(0, Number(item.beginningWeight || 0) + movement.inWeight - movement.outWeight);
+    reversal.balanceAfter = item.currentRolls;
     if (cloudEnabled) {
       try {
         await cloudPatch('items', 'id', item.id, {
@@ -562,7 +630,7 @@ async function voidTransaction(localId) {
   }
   saveState();
   renderAll();
-  toast('Transaction voided and stock recalculated.');
+  toast('Transaction voided. Reversal saved and stock recalculated.');
 }
 
 async function receiveIncomingRoll() {
@@ -729,7 +797,7 @@ function buildJobOrderUsageRows() {
   return state.transactions
     .filter((tx) => {
       const date = new Date(tx.timestamp);
-      return tx.action === 'OUT'
+      return tx.action === 'OUT' && !isVoidReversal(tx)
         && String(tx.issuedFor || '').trim()
         && (!fromDate || date >= fromDate)
         && (!toDate || date <= toDate);
@@ -1289,7 +1357,7 @@ function renderScanResult() {
 function postTransaction(action, actualWeightOverride = null) {
   if (!selectedItem) return;
   if (action === 'IN' && selectedRollQrId && state.transactions.some((tx) =>
-    tx.action === 'IN' && tx.rollQrId === selectedRollQrId
+    tx.action === 'IN' && tx.rollQrId === selectedRollQrId && !isTransactionVoided(tx)
   )) {
     toast(`Delivery for ${selectedRollQrId} is already recorded. Void that transaction before receiving this roll again.`);
     return;
@@ -1942,7 +2010,7 @@ async function syncReopenedWeekToCloud() {
 
 function exportTransactionsCsv() {
   const headers = ['Timestamp', 'QR ID', 'Product', 'Action', 'Rolls', 'Weight/Roll', 'Total Weight', 'Balance After', 'Issued For', 'User'];
-  const rows = state.transactions.map((tx) => [tx.timestamp, tx.rollQrId || tx.itemId, tx.product, tx.action, tx.rolls, tx.weightPerRoll, tx.totalWeight, tx.balanceAfter, tx.issuedFor || '', tx.user || '']);
+  const rows = state.transactions.map((tx) => [tx.timestamp, tx.rollQrId || tx.itemId, tx.product, isVoidReversal(tx) ? 'VOID REVERSAL' : isTransactionVoided(tx) ? 'VOIDED' : tx.action, tx.rolls, tx.weightPerRoll, tx.totalWeight, tx.balanceAfter, tx.issuedFor || '', tx.user || '']);
   downloadText('transactions.csv', [headers, ...rows].map((row) => row.map(csvCell).join(',')).join('\n'), 'text/csv');
 }
 
@@ -2073,7 +2141,7 @@ function registerLegacyPalletQrAliases() {
       gauge: item.gauge,
       meters: item.meters,
       remarks: match?.[4] || '',
-      delivered: Boolean(existing?.delivered || state.transactions.some((tx) => tx.itemId === item.id && tx.action === 'IN'))
+      delivered: Boolean(existing?.delivered || state.transactions.some((tx) => tx.itemId === item.id && tx.action === 'IN' && !isTransactionVoided(tx) && !isVoidReversal(tx)))
     };
     if (existing) {
       Object.assign(existing, label);
@@ -2140,6 +2208,7 @@ function fromDbItem(row) {
 }
 
 function toDbTransaction(tx) {
+  const reversalTarget = voidTargetId(tx);
   return {
     item_id: tx.itemId,
     action: tx.action,
@@ -2148,13 +2217,13 @@ function toDbTransaction(tx) {
     total_weight: tx.totalWeight,
     balance_after: tx.balanceAfter,
     issued_for: tx.issuedFor || '',
-    user_name: tx.user || ''
+    user_name: reversalTarget ? `VOID REVERSAL: ${reversalTarget} | ${transactionUser(tx)}` : tx.user || ''
   };
 }
 
 function fromDbTransaction(row) {
   const item = state.items.find((candidate) => candidate.id === row.item_id) || {};
-  return {
+  const transaction = {
     localId: String(row.id ?? createLocalTransactionId()),
     dbId: row.id,
     timestamp: row.created_at,
@@ -2168,6 +2237,8 @@ function fromDbTransaction(row) {
     issuedFor: row.issued_for || '',
     user: row.user_name || ''
   };
+  transaction.voidsTransactionId = voidTargetId(transaction);
+  return transaction;
 }
 
 function nextItemNumberFromItems(items) {
