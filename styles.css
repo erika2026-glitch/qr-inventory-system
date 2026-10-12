@@ -552,6 +552,29 @@ tr:last-child td {
   padding: 16px;
 }
 
+#balanceImportPreview {
+  margin-top: 12px;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+
+#balanceImportPreview details {
+  margin-top: 8px;
+}
+
+#balanceImportPreview ul {
+  max-height: 180px;
+  overflow: auto;
+  padding-left: 20px;
+}
+
+.settings-panel > small {
+  display: block;
+  color: var(--muted);
+  line-height: 1.45;
+  margin-top: 12px;
+}
+
 #cloudErrorText {
   overflow-wrap: anywhere;
 }

@@ -88,6 +88,7 @@
               <input id="scanInput" placeholder="Example: QR-00001 or scanned QR text">
               <button id="findBtn" class="primary">Find</button>
             </div>
+            <label for="scanTransactionDate">Transaction date<input id="scanTransactionDate" type="date"></label>
             <button id="cameraBtn" class="secondary">Start Camera Scan</button>
             <video id="scanVideo" playsinline muted></video>
           </div>
@@ -283,6 +284,22 @@
               Restore Backup
               <input id="restoreInput" type="file" accept="application/json">
             </label>
+          </div>
+          <div class="settings-panel">
+            <h2>Match Inventory to Weekly Excel Report</h2>
+            <p>Upload the latest report, select its worksheet, then use its ending balances as the new starting inventory.</p>
+            <label class="file-label">
+              Weekly inventory workbook
+              <input id="balanceImportInput" type="file" accept=".xlsx,.xls">
+            </label>
+            <label>Report worksheet<select id="balanceSheetSelect" disabled><option value="">Upload a workbook first</option></select></label>
+            <div class="form-grid">
+              <label>From<input id="balanceReportFrom" type="date" disabled></label>
+              <label>Through<input id="balanceReportTo" type="date" disabled></label>
+            </div>
+            <div id="balanceImportPreview" class="field-note" aria-live="polite">No report selected.</div>
+            <button id="applyBalanceImportBtn" class="primary" disabled>Apply Excel Balances</button>
+            <small>Online use requires the one-time <code>balance_as_of</code> database column. Existing movements after the report date will be marked VOIDED by reversal so the balance matches the Excel ending inventory.</small>
           </div>
           <div class="settings-panel">
             <h2>Import Items / Pallet List</h2>

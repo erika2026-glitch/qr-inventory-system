@@ -24,8 +24,8 @@ Ang timbang bawat rolyo mula sa pallet list ay average lamang kung total net wei
 1. Tiyaking online ang app kung kailangan makita ng ibang device ang bagong stock.
 2. Pumunta sa **Scan**. I-scan ang QR gamit ang camera ng tablet o maglagay ng QR ID/text sa field. Kung camera ang gagamitin, piliin ang **Start Camera Scan** at payagan ang browser na gumamit ng camera.
 3. Suriin ang category, lapad/product, gauge, meters, at pallet/roll details na ipinakita.
-4. Para sa QR mula sa pallet list, timbangin muna ang rolyo. Tiyakin o itama ang **Pallet Number**, at ilagay ang **Actual Weight (kg)** mula sa timbangan; ang timbang na naka-print sa QR ay estimate lang mula sa total pallet weight at roll count.
-5. Piliin ang **Delivery** kapag pisikal nang natanggap ang rolyo. Karaniwan ay isang rolyo bawat QR, kaya bilang na **1** ang gamitin kung hihingan ng bilang.
+4. Sa **Actual Weight per Roll (kg)**, ilagay ang timbang ng mismong rolyo mula sa timbangan. Required ito bago makapag-Delivery. Para sa QR mula sa pallet list, tiyakin o itama rin ang **Pallet Number** sa unang receive screen; ang timbang na naka-print sa QR ay estimate lang.
+5. Piliin ang **Delivery** kapag pisikal nang natanggap ang rolyo. Karaniwan ay isang rolyo bawat QR, kaya bilang na **1** ang gamitin.
 6. Kapag may katugmang inventory item, idaragdag ang Delivery roon gamit ang aktuwal na timbang. Kung walang katugma, gagawa ang app ng inventory item sa oras ng Delivery.
 7. Hintaying lumabas ang matagumpay na confirmation bago magpatuloy sa susunod na rolyo.
 
@@ -47,13 +47,17 @@ Hindi papayagan ang issuance na mas marami kaysa sa available na stock. Kailanga
 - **Inventory**: stock kada category at product, kasama ang beginning inventory, deliveries, issuances, ending inventory, at status. Gamitin ang search o category filter para maghanap.
 - **Transactions**: talaan ng bawat Delivery at Issuance. Hanapin dito ang QR ID, JO, o pangalan ng nag-scan.
 - **Reports**: pumili ng From at To date at category, saka piliin ang **Apply**. Piliin ang **Print Report** para i-print o i-save bilang PDF. Ang nakatakdang linggo ay Lunes hanggang Sabado.
+- **Pagsasara ng linggo**: pagkatapos maitama at maitala ang lahat ng galaw para sa linggo, buksan ang Reports, piliin ang eksaktong From/To dates, pindutin ang **Apply**, saka **Close Week** at kumpirmahin. Ang ending balance ang magiging beginning balance ng susunod na linggo; hindi na muling isasama sa kasalukuyang Inventory ang mga galaw bago o hanggang sa petsa ng pagsasara. Nananatiling pareho ang naka-archive na report ng isinara mong linggo.
+- Para magamit ang balance cutoff sa lahat ng device na nakakonekta sa Supabase, patakbuhin nang isang beses ang `supabase_balance_as_of.sql` sa Supabase SQL Editor bago i-deploy ang update.
+- **Pagtutugma sa Excel report**: sa Settings, i-upload ang workbook, piliin ang tamang worksheet, at tiyaking tama ang From/Through dates sa preview bago pindutin ang **Apply Excel Balances**. Gagamitin ng app ang ending inventory ng Excel bilang bagong baseline. Ire-reverse nito ang mga active app transaction pagkatapos ng report date upang eksaktong tumugma ang stock; mananatili ang mga original at lalabas na VOIDED. Ang mga susunod na closed-week archive ay mamarkahang superseded, hindi buburahin.
+- **Petsa ng scan**: sa Scan, ilagay ang aktuwal na petsa ng delivery o issuance bago mag-post. Default ang araw na ito. Hindi tatanggap ang app ng petsang kapareho o mas luma sa pinakahuling inventory baseline.
 - **Job Order Usage Report**: listahan ng mga rolyong na-issue kada JO. Gamitin ang search o **Export JO Usage** para i-download bilang CSV.
 - **QR Labels**: maghanap, mag-print, o mag-reprint ng mga QR label na available sa device/app.
 - **Settings**: online connection, pangalan ng staff, backup/restore, at pag-import.
 
 ## 6. Kung may maling transaction
 
-Sa **Transactions**, gamitin ang **Void** sa pinakahuling transaction kung pinapayagan ng app. Basahin ang confirmation bago ituloy. Ang pag-void ay nag-aalis ng transaction at nire-recalculate ang stock; hindi ito basta maibabalik. Huwag gamitin ang **Reset Local Data** bilang pang-undo: hindi nito binubura ang online Supabase data, pero nire-reset nito ang lokal na browser data.
+Sa **Transactions**, gamitin ang **Void** sa pinakahuling galaw para sa item at kumpirmahin. Hindi binubura ang original transaction: magdaragdag ang app ng katapat na **VOID REVERSAL** para bumalik ang stock at manatili ang audit trail. Makikita ang original bilang **VOIDED**. Hindi maaaring i-void ulit ang parehong transaction. Kailangan online ang app para ma-save sa Supabase; hindi kailangan mag-delete o magpatakbo ng SQL policy para sa Void.
 
 ## 7. Kapag Offline o may “failed to fetch”
 

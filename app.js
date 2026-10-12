@@ -27,6 +27,8 @@ let cloudEnabled = false;
 let cloudLastError = '';
 let labelPrintOnlyIds = null;
 let palletLabelEntries = null;
+let balanceImportWorkbook = null;
+let balanceImportPlan = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   bindNavigation();
@@ -240,12 +242,18 @@ function bindActions() {
   el('retryCloudBtn').addEventListener('click', retryCloudConnection);
   el('downloadItemTemplateBtn').addEventListener('click', downloadItemTemplate);
   el('itemImportInput').addEventListener('change', importItemsCsv);
+  el('balanceImportInput').addEventListener('change', loadBalanceImportWorkbook);
+  el('balanceSheetSelect').addEventListener('change', updateBalanceImportPreview);
+  el('balanceReportFrom').addEventListener('change', updateBalanceImportPreview);
+  el('balanceReportTo').addEventListener('change', updateBalanceImportPreview);
+  el('applyBalanceImportBtn').addEventListener('click', applyExcelBalanceImport);
   el('resetBtn').addEventListener('click', resetLocalData);
   el('saveStaffBtn').addEventListener('click', saveStaffName);
   el('addItemBtn').addEventListener('click', () => el('itemDialog').showModal());
   el('cancelItemBtn').addEventListener('click', () => el('itemDialog').close());
   el('itemForm').addEventListener('submit', saveNewItem);
   initializeReportDates();
+  el('scanTransactionDate').value = toDateInput(new Date());
   el('staffNameInput').value = getStaffName();
   updateCloudErrorText();
 }
@@ -569,32 +577,10 @@ async function voidTransaction(localId) {
   }
   if (!confirm(`Void this ${tx.action === 'IN' ? 'Delivery' : 'Issuance'} of ${tx.rolls} roll(s) for ${tx.itemId}? A reversal will be added to the audit trail and the stock balance will be recalculated.`)) return;
 
-  const reversal = {
-    localId: createLocalTransactionId(),
-    rollQrId: tx.rollQrId || '',
-    timestamp: new Date().toISOString(),
-    itemId: tx.itemId,
-    product: tx.product,
-    action: tx.action === 'IN' ? 'OUT' : 'IN',
-    rolls: Number(tx.rolls || 0),
-    weightPerRoll: Number(tx.weightPerRoll || 0),
-    totalWeight: Number(tx.totalWeight || 0),
-    balanceAfter: 0,
-    issuedFor: `VOID REVERSAL: ${transactionKey(tx)}`,
-    user: localStorage.getItem(STAFF_KEY) || transactionUser(tx),
-    voidsTransactionId: transactionKey(tx)
-  };
+  const reversal = makeVoidReversal(tx);
   if (cloudEnabled) {
     try {
-      let inserted;
-      try {
-        inserted = await cloudInsert('transactions', [toDbTransaction(reversal)]);
-      } catch (error) {
-        if (!String(error.message || error).toLowerCase().includes('issued_for')) throw error;
-        const row = toDbTransaction(reversal);
-        delete row.issued_for;
-        inserted = await cloudInsert('transactions', [row]);
-      }
+      const inserted = await insertCloudTransactions([reversal]);
       reversal.dbId = inserted[0]?.id;
       if (reversal.dbId == null) throw new Error('Supabase did not return the saved reversal transaction.');
     } catch (error) {
@@ -932,7 +918,7 @@ function buildReportGrandTotals(rows) {
 function buildWeeklySummary(from, to) {
   const fromDate = from ? new Date(`${from}T00:00:00`) : null;
   const toDate = to ? new Date(`${to}T23:59:59`) : null;
-  const closedWeek = (state.closedWeeks || []).find((week) => week.from === from && week.to === to);
+  const closedWeek = (state.closedWeeks || []).find((week) => !isSupersededClosedWeek(week) && week.from === from && week.to === to);
   const priorClosedWeek = latestClosedWeekBefore(from);
 
   return activeItems().map((item) => {
@@ -998,12 +984,17 @@ function buildWeeklySummary(from, to) {
 }
 
 function latestClosedWeekBefore(date) {
-  const weeks = (state.closedWeeks || []).filter((week) => !date || week.to < date);
+  const weeks = (state.closedWeeks || []).filter((week) => !isSupersededClosedWeek(week) && (!date || week.to < date));
   return weeks.sort((a, b) => b.to.localeCompare(a.to))[0] || null;
 }
 
+function isSupersededClosedWeek(week) {
+  const syncedBaselineDate = state.items.map((item) => item.balanceAsOf).filter(Boolean).sort().at(-1) || '';
+  return Boolean(week.supersededByExcel || (syncedBaselineDate && week.to > syncedBaselineDate));
+}
+
 function earliestClosedWeek() {
-  return (state.closedWeeks || []).slice().sort((a, b) => a.to.localeCompare(b.to))[0] || null;
+  return (state.closedWeeks || []).filter((week) => !isSupersededClosedWeek(week)).slice().sort((a, b) => a.to.localeCompare(b.to))[0] || null;
 }
 
 function renderClosedWeeks() {
@@ -1015,7 +1006,7 @@ function renderClosedWeeks() {
     <td>${week.itemCount}</td>
     <td>${formatNumber(week.totalEndingRolls, 0)}</td>
     <td>${formatNumber(week.totalEndingWeight, 2)}</td>
-    <td>${week === latestWeek ? '<button class="secondary reopen-week-btn">Reopen</button>' : ''}</td>
+    <td>${isSupersededClosedWeek(week) ? `Superseded by balance ${escapeHtml(week.supersededByExcel || state.items.map((item) => item.balanceAsOf).filter(Boolean).sort().at(-1))}` : week === latestWeek ? '<button class="secondary reopen-week-btn">Reopen</button>' : ''}</td>
   </tr>`).join('') || `<tr><td colspan="6">No closed weeks yet.</td></tr>`;
   el('closedWeeksRows').querySelectorAll('.reopen-week-btn').forEach((button) => {
     button.addEventListener('click', reopenLatestWeek);
@@ -1363,6 +1354,13 @@ function postTransaction(action, actualWeightOverride = null) {
     return;
   }
   const rolls = Number(document.getElementById('actionRolls').value);
+  const movementDate = el('scanTransactionDate').value || toDateInput(new Date());
+  const latestBalanceDate = [selectedItem.balanceAsOf, latestClosedWeekBefore(null)?.to].filter(Boolean).sort().at(-1);
+  if (latestBalanceDate && movementDate <= latestBalanceDate) {
+    toast(`Choose a date after the latest inventory balance (${latestBalanceDate}).`);
+    el('scanTransactionDate').focus();
+    return;
+  }
   const user = document.getElementById('actionUser').value.trim();
   let issuedFor = action === 'OUT' ? document.getElementById('issuedForInput').value.trim() : '';
   const actionLabel = action === 'IN' ? 'DELIVERY' : 'ISSUANCE';
@@ -1410,7 +1408,7 @@ function postTransaction(action, actualWeightOverride = null) {
   state.transactions.push({
     localId: createLocalTransactionId(),
     rollQrId: selectedRollQrId,
-    timestamp: new Date().toISOString(),
+    timestamp: transactionTimestamp(movementDate),
     itemId: selectedItem.id,
     product: selectedItem.product,
     action,
@@ -1910,6 +1908,335 @@ function parseWorkbookRows(buffer) {
   return XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
 }
 
+function parseExcelNumber(value) {
+  if (typeof value === 'number') return Number.isFinite(value) ? value : 0;
+  const text = String(value ?? '').trim().replace(/,/g, '');
+  if (!text || text === '-') return 0;
+  if (/^\(.*\)$/.test(text)) return -(Number(text.slice(1, -1)) || 0);
+  return Number(text) || 0;
+}
+
+function parseReportSheetPeriod(name) {
+  const match = String(name).match(/([A-Za-z]+)\.?\s*(\d{1,2})\s*-\s*([A-Za-z]+)\.?\s*(\d{1,2})/);
+  if (!match) return null;
+  const monthNumber = (token) => {
+    const names = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+    return names.indexOf(token.toUpperCase().slice(0, 3)) + 1;
+  };
+  const startMonth = monthNumber(match[1]);
+  const endMonth = monthNumber(match[3]);
+  if (!startMonth || !endMonth) return null;
+  const currentYear = new Date().getFullYear();
+  const endYear = currentYear;
+  const startYear = endMonth < startMonth ? currentYear - 1 : currentYear;
+  const iso = (year, month, day) => `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  return { from: iso(startYear, startMonth, Number(match[2])), to: iso(endYear, endMonth, Number(match[4])) };
+}
+
+async function loadBalanceImportWorkbook(event) {
+  const file = event.target.files?.[0];
+  balanceImportWorkbook = null;
+  balanceImportPlan = null;
+  el('applyBalanceImportBtn').disabled = true;
+  if (!file) return;
+  try {
+    if (!window.XLSX) throw new Error('Excel reader is still loading. Try again in a few seconds.');
+    const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+    balanceImportWorkbook = workbook;
+    const select = el('balanceSheetSelect');
+    select.innerHTML = workbook.SheetNames.map((name) => `<option value="${escapeHtml(name)}">${escapeHtml(name)}</option>`).join('');
+    select.disabled = false;
+    const newest = workbook.SheetNames
+      .map((name) => ({ name, period: parseReportSheetPeriod(name) }))
+      .filter((entry) => entry.period)
+      .sort((a, b) => b.period.to.localeCompare(a.period.to))[0];
+    select.value = newest?.name || workbook.SheetNames[0];
+    el('balanceReportFrom').disabled = false;
+    el('balanceReportTo').disabled = false;
+    updateBalanceImportPreview(true);
+  } catch (error) {
+    el('balanceImportPreview').textContent = error.message || String(error);
+  }
+}
+
+function updateBalanceImportPreview(useSheetDates = false) {
+  balanceImportPlan = null;
+  el('applyBalanceImportBtn').disabled = true;
+  if (!balanceImportWorkbook) return;
+  const sheetName = el('balanceSheetSelect').value;
+  const period = parseReportSheetPeriod(sheetName);
+  if (useSheetDates && period) {
+    el('balanceReportFrom').value = period.from;
+    el('balanceReportTo').value = period.to;
+  }
+  const from = el('balanceReportFrom').value;
+  const to = el('balanceReportTo').value;
+  if (!from || !to || from > to) {
+    el('balanceImportPreview').textContent = 'Choose a valid report period.';
+    return;
+  }
+  try {
+    const sheet = balanceImportWorkbook.Sheets[sheetName];
+    const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+    const plan = buildExcelBalancePlan(rows, from, to);
+    const itemIds = new Set(plan.matches.map(({ item }) => item.id));
+    const cutoff = new Date(`${to}T23:59:59.999`);
+    plan.transactionsToReverse = state.transactions.filter((tx) => itemIds.has(resolveInventoryItemId(tx.itemId))
+      && new Date(tx.timestamp) > cutoff && !isVoidReversal(tx) && !isTransactionVoided(tx));
+    plan.unsyncedTransactions = cloudEnabled
+      ? plan.transactionsToReverse.filter((tx) => tx.dbId == null)
+      : [];
+    plan.laterClosedWeeks = (state.closedWeeks || []).filter((week) => !isSupersededClosedWeek(week) && week.to > to);
+    balanceImportPlan = plan;
+    const endingRolls = plan.matches.reduce((sum, match) => sum + match.source.endingRolls, 0);
+    const endingWeight = plan.matches.reduce((sum, match) => sum + match.source.endingWeight, 0);
+    const unmatchedItems = plan.unmatchedItems.map((item) => item.id).join(', ');
+    const movementDetails = plan.transactionsToReverse.map((tx) =>
+      `<li>${escapeHtml(tx.itemId)} · ${escapeHtml(tx.action)} · ${formatNumber(tx.rolls, 0)} roll(s) · ${formatDate(tx.timestamp)}</li>`
+    ).join('');
+    const hasMismatch = plan.mismatches.length > 0 || plan.unmatchedRows.length > 0;
+    el('balanceImportPreview').innerHTML = `
+      <strong>${escapeHtml(sheetName)} (${escapeHtml(from)} to ${escapeHtml(to)})</strong><br>
+      Matched ${plan.matches.length} Excel rows to inventory items. Excel ending balance: ${formatNumber(endingRolls, 0)} rolls / ${formatNumber(endingWeight, 2)} kg.<br>
+      ${plan.transactionsToReverse.length} active app movement(s) after this report date will be reversed. ${plan.laterClosedWeeks.length} later closed-week report(s) will be marked superseded.<br>
+      ${unmatchedItems ? `Not listed in the Excel and will remain unchanged: ${escapeHtml(unmatchedItems)}.` : 'All inventory items are represented in the Excel.'}
+      ${!cloudEnabled ? '<br><strong>Cannot apply:</strong> Connect to Supabase first so the new baseline is saved for all devices.' : ''}
+      ${hasMismatch ? `<br><strong>Cannot apply:</strong> ${plan.mismatches.length} duplicate-key group mismatch(es), ${plan.unmatchedRows.length} unmatched Excel row(s).` : ''}
+      ${plan.unsyncedTransactions.length ? `<br><strong>Cannot apply online:</strong> ${plan.unsyncedTransactions.length} movement(s) have not finished syncing.` : ''}
+      ${movementDetails ? `<details><summary>Review movements to reverse</summary><ul>${movementDetails}</ul></details>` : ''}`;
+    el('applyBalanceImportBtn').disabled = !cloudEnabled || hasMismatch || plan.unsyncedTransactions.length > 0 || !plan.matches.length;
+  } catch (error) {
+    el('balanceImportPreview').textContent = error.message || String(error);
+  }
+}
+
+function buildExcelBalancePlan(rows, from, to) {
+  const headerIndex = findHeaderRowIndex(rows, ['productdescription']);
+  if (headerIndex < 1) throw new Error('Could not find the report table headers in that worksheet.');
+  const groupHeaders = rows[headerIndex - 1].map(normalizeHeader);
+  const findGroupStart = (name) => groupHeaders.findIndex((header) => header.includes(normalizeHeader(name)));
+  const beginningStart = findGroupStart('beginventory');
+  const deliveryStart = findGroupStart('deliveries');
+  const issuanceStart = findGroupStart('issuances');
+  const endingStart = findGroupStart('endinginventory');
+  if ([beginningStart, deliveryStart, issuanceStart, endingStart].some((index) => index < 0)) {
+    throw new Error('The selected worksheet is missing one or more inventory balance columns.');
+  }
+
+  const categoryByRow = new Map();
+  let category = '';
+  const sourceRows = [];
+  rows.slice(headerIndex + 1).forEach((row, index) => {
+    const first = String(row[0] ?? '').trim();
+    const product = String(row[1] ?? '').trim();
+    if (/^[IVXLCDM]+\.$/i.test(first) && product) {
+      category = product;
+      return;
+    }
+    if (!/^\s*[\d.]+\s*mm\b/i.test(product)) return;
+    const at = (start) => parseExcelNumber(row[start]);
+    const source = {
+      rowNumber: headerIndex + index + 2,
+      category,
+      product,
+      gauge: String(row[3] ?? '').trim(),
+      meters: String(row[4] ?? '').trim(),
+      remarks: String(row[5] ?? '').trim(),
+      beginningRolls: at(beginningStart),
+      beginningWeight: at(beginningStart + 1),
+      inRolls: at(deliveryStart),
+      inWeight: at(deliveryStart + 1),
+      outRolls: Math.abs(at(issuanceStart)),
+      outWeight: Math.abs(at(issuanceStart + 1)),
+      endingRolls: at(endingStart),
+      endingWeight: at(endingStart + 1)
+    };
+    if (!source.category) throw new Error(`Excel row ${source.rowNumber} is missing a category.`);
+    const calculatedRolls = source.beginningRolls + source.inRolls - source.outRolls;
+    const calculatedWeight = source.beginningWeight + source.inWeight - source.outWeight;
+    if (Math.abs(calculatedRolls - source.endingRolls) > 0.01 || Math.abs(calculatedWeight - source.endingWeight) > 0.05) {
+      throw new Error(`Excel row ${source.rowNumber} does not reconcile. Check its beginning, delivery, issuance, and ending values.`);
+    }
+    sourceRows.push(source);
+  });
+  if (!sourceRows.length) throw new Error('No product rows were found in the selected worksheet.');
+
+  const keyFor = (value) => [value.category, value.product, value.gauge, value.meters, value.remarks]
+    .map((part) => String(part ?? '').trim().replace(/\s+/g, ' ').toLowerCase()).join('|');
+  const appGroups = new Map();
+  activeItems().slice().sort((a, b) => Number(a.id.match(/\d+/)?.[0] || 0) - Number(b.id.match(/\d+/)?.[0] || 0))
+    .forEach((item) => {
+      const key = keyFor(item);
+      appGroups.set(key, [...(appGroups.get(key) || []), item]);
+    });
+  const sourceGroups = new Map();
+  sourceRows.forEach((source) => {
+    const key = keyFor(source);
+    sourceGroups.set(key, [...(sourceGroups.get(key) || []), source]);
+  });
+  const matches = [];
+  const mismatches = [];
+  const unmatchedRows = [];
+  const allKeys = new Set([...appGroups.keys(), ...sourceGroups.keys()]);
+  allKeys.forEach((key) => {
+    const appGroup = appGroups.get(key) || [];
+    const sourceGroup = sourceGroups.get(key) || [];
+    if (appGroup.length !== sourceGroup.length) mismatches.push({ key, appCount: appGroup.length, sourceCount: sourceGroup.length });
+    const count = Math.min(appGroup.length, sourceGroup.length);
+    for (let index = 0; index < count; index++) matches.push({ item: appGroup[index], source: sourceGroup[index] });
+    unmatchedRows.push(...sourceGroup.slice(count));
+  });
+  const matchedIds = new Set(matches.map(({ item }) => item.id));
+  const unmatchedItems = activeItems().filter((item) => !matchedIds.has(item.id));
+  return { from, to, matches, mismatches, unmatchedRows, unmatchedItems };
+}
+
+function makeVoidReversal(tx, balanceAfter = 0) {
+  const targetId = transactionKey(tx);
+  return {
+    localId: createLocalTransactionId(),
+    rollQrId: tx.rollQrId || '',
+    timestamp: new Date().toISOString(),
+    itemId: tx.itemId,
+    product: tx.product,
+    action: tx.action === 'IN' ? 'OUT' : 'IN',
+    rolls: Number(tx.rolls || 0),
+    weightPerRoll: Number(tx.weightPerRoll || 0),
+    totalWeight: Number(tx.totalWeight || 0),
+    balanceAfter,
+    issuedFor: `VOID REVERSAL: ${targetId}`,
+    user: localStorage.getItem(STAFF_KEY) || transactionUser(tx),
+    voidsTransactionId: targetId
+  };
+}
+
+async function insertCloudTransactions(transactions) {
+  try {
+    return await cloudInsert('transactions', transactions.map(toDbTransaction));
+  } catch (error) {
+    if (!String(error.message || error).toLowerCase().includes('issued_for')) throw error;
+    return cloudInsert('transactions', transactions.map((tx) => {
+      const row = toDbTransaction(tx);
+      delete row.issued_for;
+      return row;
+    }));
+  }
+}
+
+async function applyExcelBalanceImport() {
+  const plan = balanceImportPlan;
+  if (!plan || !plan.matches.length) return;
+  if (!cloudEnabled) {
+    toast('Connect to Supabase before applying the Excel baseline.');
+    return;
+  }
+  const laterCloseText = plan.laterClosedWeeks.length
+    ? `\n${plan.laterClosedWeeks.length} later closed-week snapshot(s) will be marked superseded.`
+    : '';
+  const reversalText = plan.transactionsToReverse.length
+    ? `\n${plan.transactionsToReverse.length} active transaction(s) after ${plan.to} will receive reversal entries so the balance returns to the Excel snapshot.`
+    : '';
+  if (!confirm(`Use the Excel ending balances for ${plan.to} as the new inventory baseline?\n\n${plan.matches.length} items will be matched and updated. Items not listed in the sheet will stay unchanged.${reversalText}${laterCloseText}\n\nThis preserves transaction history; it does not delete rows.`)) return;
+
+  const reversals = plan.transactionsToReverse.map((tx) => {
+    const match = plan.matches.find(({ item }) => item.id === resolveInventoryItemId(tx.itemId));
+    return makeVoidReversal(tx, match?.source.endingRolls || 0);
+  });
+  if (cloudEnabled && reversals.length) {
+    try {
+      const inserted = await insertCloudTransactions(reversals);
+      if (inserted.length !== reversals.length || inserted.some((row) => row.id == null)) {
+        throw new Error('Supabase did not confirm every reversal row. No inventory baseline was changed.');
+      }
+      reversals.forEach((tx, index) => { tx.dbId = inserted[index].id; });
+    } catch (error) {
+      toast(`Could not save reversal entries online. Inventory was not changed: ${error.message}`);
+      return;
+    }
+  }
+
+  reversals.forEach((reversal) => {
+    const original = state.transactions.find((tx) => transactionKey(tx) === voidTargetId(reversal));
+    if (original?.action === 'IN' && original.rollQrId) {
+      const label = state.rollLabels?.find((row) => row.qrId === original.rollQrId);
+      if (label) label.delivered = false;
+    }
+  });
+  state.transactions.push(...reversals);
+  plan.matches.forEach(({ item, source }) => {
+    item.beginningRolls = source.endingRolls;
+    item.beginningWeight = source.endingWeight;
+    item.currentRolls = source.endingRolls;
+    item.currentWeight = source.endingWeight;
+    item.balanceAsOf = plan.to;
+  });
+
+  state.closedWeeks = (state.closedWeeks || []).filter((week) => !(week.from === plan.from && week.to === plan.to));
+  state.closedWeeks.forEach((week) => {
+    if (!week.supersededByExcel && week.to > plan.to) week.supersededByExcel = plan.to;
+  });
+  const reportRows = plan.matches.map(({ item, source }) => ({
+    id: item.id,
+    product: item.product,
+    beginningRolls: source.beginningRolls,
+    beginningWeight: source.beginningWeight,
+    inRolls: source.inRolls,
+    inWeight: source.inWeight,
+    outRolls: source.outRolls,
+    outWeight: source.outWeight,
+    endingRolls: source.endingRolls,
+    endingWeight: source.endingWeight
+  }));
+  state.closedWeeks.push({
+    from: plan.from,
+    to: plan.to,
+    closedAt: new Date().toISOString(),
+    importedFromExcel: true,
+    itemCount: reportRows.length,
+    totalEndingRolls: reportRows.reduce((sum, row) => sum + row.endingRolls, 0),
+    totalEndingWeight: reportRows.reduce((sum, row) => sum + row.endingWeight, 0),
+    rows: reportRows
+  });
+  plan.matches.forEach(({ item }) => {
+    const movement = getItemMovement(item.id);
+    item.currentRolls = Number(item.beginningRolls || 0) + movement.inRolls - movement.outRolls;
+    item.currentWeight = Math.max(0, Number(item.beginningWeight || 0) + movement.inWeight - movement.outWeight);
+  });
+  el('reportFrom').value = plan.from;
+  el('reportTo').value = plan.to;
+  saveState();
+  renderAll();
+
+  if (cloudEnabled) {
+    try {
+      await Promise.all(plan.matches.map(({ item }) => cloudPatch('items', 'id', item.id, {
+        beginning_rolls: item.beginningRolls,
+        beginning_weight: item.beginningWeight,
+        current_rolls: item.currentRolls,
+        current_weight: item.currentWeight,
+        balance_as_of: item.balanceAsOf
+      })));
+      setSyncStatus('Online database connected', 'online');
+      toast(`Excel balances applied as of ${plan.to}. Inventory is ready for new deliveries.`);
+    } catch (error) {
+      setSyncStatus('Sync error', 'offline');
+      toast(`Excel baseline applied on this device, but cloud update failed: ${error.message}. Run supabase_balance_as_of.sql once, then reapply the report.`);
+      return;
+    }
+  } else {
+    toast(`Excel baseline applied on this device as of ${plan.to}. Reconnect to Supabase before relying on this balance on other devices.`);
+  }
+  balanceImportWorkbook = null;
+  balanceImportPlan = null;
+  el('balanceImportInput').value = '';
+  el('balanceSheetSelect').innerHTML = '<option value="">Upload a workbook first</option>';
+  el('balanceSheetSelect').disabled = true;
+  el('balanceReportFrom').disabled = true;
+  el('balanceReportTo').disabled = true;
+  el('applyBalanceImportBtn').disabled = true;
+  el('balanceImportPreview').textContent = `Excel baseline applied as of ${plan.to}. Upload the workbook again only if you intentionally need to re-import it.`;
+}
+
 function findHeaderRowIndex(rows, requiredHeaders) {
   return rows.findIndex((row) => {
     const headers = row.map(normalizeHeader);
@@ -2210,6 +2537,7 @@ function fromDbItem(row) {
 function toDbTransaction(tx) {
   const reversalTarget = voidTargetId(tx);
   return {
+    created_at: tx.timestamp,
     item_id: tx.itemId,
     action: tx.action,
     rolls: tx.rolls,
@@ -2271,6 +2599,10 @@ function toDateInput(date) {
   const month = String(date.getMonth() + 1).padStart(2, '0');
   const day = String(date.getDate()).padStart(2, '0');
   return `${year}-${month}-${day}`;
+}
+
+function transactionTimestamp(date = toDateInput(new Date())) {
+  return new Date(`${date}T12:00:00`).toISOString();
 }
 
 function formatShortDate(value) {
