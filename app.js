@@ -347,9 +347,8 @@ function renderInventory() {
 
   for (const [category, items] of grouped.entries()) {
     items.forEach((item) => {
-    const movement = getItemMovement(item.id);
-    const endingRolls = Number(item.beginningRolls || 0) + movement.inRolls - movement.outRolls;
-    const endingWeight = Number(item.beginningWeight || 0) + movement.inWeight - movement.outWeight;
+    const values = getInventoryDisplayValues(item);
+    const { movement, beginningRolls, beginningWeight, endingRolls, endingWeight } = values;
     item.currentRolls = endingRolls;
     item.currentWeight = Math.max(0, endingWeight);
     const status = endingRolls <= 0 ? 'low' : endingRolls <= Number(item.minRolls || 0) ? 'warn' : 'ok';
@@ -361,8 +360,8 @@ function renderInventory() {
       <td>${escapeHtml(item.gauge)}</td>
       <td>${escapeHtml(item.meters)}</td>
       <td>${escapeHtml(displayRemarks(item))}</td>
-      <td>${formatBlankZero(item.beginningRolls, 0)}</td>
-      <td>${formatBlankZero(item.beginningWeight, 2)}</td>
+      <td>${formatBlankZero(beginningRolls, 0)}</td>
+      <td>${formatBlankZero(beginningWeight, 2)}</td>
       <td>${formatBlankZero(movement.inRolls, 0)}</td>
       <td>${formatBlankZero(movement.inWeight, 2)}</td>
       <td>${formatBlankZero(movement.outRolls, 0)}</td>
@@ -377,6 +376,25 @@ function renderInventory() {
   }
 
   el('inventoryRows').innerHTML = html.join('') || `<tr><td colspan="15">No matching items.</td></tr>`;
+}
+
+function getInventoryDisplayValues(item) {
+  const movement = getItemMovement(item.id);
+  const importedBaseline = latestClosedWeekBefore(null);
+  const excelRow = importedBaseline?.importedFromExcel
+    ? importedBaseline.rows?.find((row) => String(row.id) === String(item.id))
+    : null;
+  const beginningRolls = Number(excelRow?.beginningRolls ?? item.beginningRolls ?? 0);
+  const beginningWeight = Number(excelRow?.beginningWeight ?? item.beginningWeight ?? 0);
+  const displayMovement = excelRow ? {
+    inRolls: Number(excelRow.inRolls || 0) + movement.inRolls,
+    inWeight: Number(excelRow.inWeight || 0) + movement.inWeight,
+    outRolls: Number(excelRow.outRolls || 0) + movement.outRolls,
+    outWeight: Number(excelRow.outWeight || 0) + movement.outWeight
+  } : movement;
+  const endingRolls = beginningRolls + displayMovement.inRolls - displayMovement.outRolls;
+  const endingWeight = beginningWeight + displayMovement.inWeight - displayMovement.outWeight;
+  return { movement: displayMovement, beginningRolls, beginningWeight, endingRolls, endingWeight };
 }
 
 function getItemMovement(itemId) {
@@ -435,11 +453,7 @@ function buildInventoryTotalRows(rows) {
   const grouped = groupBy(rows, (item) => item.category || 'Uncategorized');
   for (const [category, items] of grouped.entries()) {
     const total = items.reduce((sum, item) => {
-      const movement = getItemMovement(item.id);
-      const beginningRolls = Number(item.beginningRolls || 0);
-      const beginningWeight = Number(item.beginningWeight || 0);
-      const endingRolls = beginningRolls + movement.inRolls - movement.outRolls;
-      const endingWeight = Math.max(0, beginningWeight + movement.inWeight - movement.outWeight);
+      const { movement, beginningRolls, beginningWeight, endingRolls, endingWeight } = getInventoryDisplayValues(item);
       sum.beginningRolls += beginningRolls;
       sum.beginningWeight += beginningWeight;
       sum.inRolls += movement.inRolls;
